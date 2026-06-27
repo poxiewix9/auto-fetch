@@ -15,20 +15,29 @@ export async function GET(request: Request) {
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error || !data.session) {
-    return NextResponse.redirect(`${origin}/?error=auth_failed`);
+    const reason = error?.message ?? "no_session";
+    console.error("[auth/callback] exchangeCodeForSession failed:", reason);
+    return NextResponse.redirect(
+      `${origin}/?error=auth_failed&reason=${encodeURIComponent(reason)}`
+    );
   }
 
   // Persist the Google refresh token so we can sync Gmail server-side later.
-  const refreshToken = data.session.provider_refresh_token;
-  if (refreshToken && data.user) {
-    await supabase.from("gmail_tokens").upsert(
-      {
-        user_id: data.user.id,
-        refresh_token: encryptToken(refreshToken),
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id" }
-    );
+  // Wrapped so a token-storage hiccup can never block a successful sign-in.
+  try {
+    const refreshToken = data.session.provider_refresh_token;
+    if (refreshToken && data.user) {
+      await supabase.from("gmail_tokens").upsert(
+        {
+          user_id: data.user.id,
+          refresh_token: encryptToken(refreshToken),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" }
+      );
+    }
+  } catch (e) {
+    console.error("[auth/callback] failed to persist gmail token:", e);
   }
 
   return NextResponse.redirect(`${origin}${next}`);
