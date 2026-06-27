@@ -1,10 +1,21 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Dashboard } from "./dashboard/dashboard";
 import type { Application } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ code?: string }>;
+}) {
+  // Safety net: if Supabase's redirect-URL config sends the OAuth ?code= to the
+  // site root instead of /auth/callback, hand it off to the callback to be
+  // exchanged for a session.
+  const { code } = await searchParams;
+  if (code) redirect(`/auth/callback?code=${encodeURIComponent(code)}`);
+
   const supabase = await createClient();
   const {
     data: { user },
