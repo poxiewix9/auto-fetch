@@ -16,9 +16,22 @@ export async function GET(request: Request) {
 
   if (error || !data.session) {
     const reason = error?.message ?? "no_session";
-    console.error("[auth/callback] exchangeCodeForSession failed:", reason);
+    // The anon/publishable key is public (it ships to the browser), so it's
+    // safe to fingerprint here. This tells us whether Vercel actually has the
+    // env var set vs. whether Supabase is rejecting a wrong value.
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+    const keyInfo = key
+      ? `${key.slice(0, 14)}…len${key.length}`
+      : "MISSING";
+    const urlInfo = url ? url : "MISSING";
+    console.error(
+      `[auth/callback] exchangeCodeForSession failed: ${reason} | key=${keyInfo} | url=${urlInfo}`
+    );
     return NextResponse.redirect(
-      `${origin}/?error=auth_failed&reason=${encodeURIComponent(reason)}`
+      `${origin}/?error=auth_failed&reason=${encodeURIComponent(
+        reason
+      )}&key=${encodeURIComponent(keyInfo)}&url=${encodeURIComponent(urlInfo)}`
     );
   }
 
