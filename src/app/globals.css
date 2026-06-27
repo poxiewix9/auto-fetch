@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #f6f5f1;
+  --paper-raised: #fdfcfa;
+  --ink: #1a1916;
+  --muted: #6f6d64;
+  --faint: #9a988e;
+  --line: #e4e2d9;
+  --line-strong: #d6d3c8;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Small-caps label treatment used across the editorial UI. */
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+.scroll-thin::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 9999px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+select option {
+  background: var(--paper-raised);
+  color: var(--ink);
+}
