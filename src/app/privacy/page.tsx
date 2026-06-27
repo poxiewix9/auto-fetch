@@ -94,7 +94,10 @@ export default function Privacy() {
           <h2 className="text-base font-medium text-ink">Contact</h2>
           <p className="mt-2">
             Questions about your data? Email{" "}
-            <span className="text-ink">your-email@example.com</span>.
+            <a className="text-ink underline" href="mailto:keshav.singh@utexas.edu">
+              keshav.singh@utexas.edu
+            </a>
+            .
           </p>
         </section>
       </div>

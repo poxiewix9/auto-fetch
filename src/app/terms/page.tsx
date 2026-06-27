@@ -59,6 +59,17 @@ export default function Terms() {
             access tokens.
           </p>
         </section>
+
+        <section>
+          <h2 className="text-base font-medium text-ink">Contact</h2>
+          <p className="mt-2">
+            Questions? Email{" "}
+            <a className="text-ink underline" href="mailto:keshav.singh@utexas.edu">
+              keshav.singh@utexas.edu
+            </a>
+            .
+          </p>
+        </section>
       </div>
 
       <div className="mt-10 border-t border-line pt-6 text-sm">
