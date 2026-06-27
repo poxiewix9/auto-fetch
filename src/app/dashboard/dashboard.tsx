@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { TallyLogo } from "@/components/logo";
+import { TallyLogo, TallyMark } from "@/components/logo";
+import { SignInButton } from "@/components/sign-in-button";
 import { FunnelView } from "./funnel";
 import {
   ALL_STAGES,
@@ -78,6 +79,7 @@ export function Dashboard({
   const [dragId, setDragId] = useState<string | null>(null);
   const [scanLimit, setScanLimit] = useState(300);
   const [view, setView] = useState<"board" | "funnel">("board");
+  const [authPromptOpen, setAuthPromptOpen] = useState(false);
 
   useEffect(() => setApps(applications), [applications]);
 
@@ -128,21 +130,9 @@ export function Dashboard({
   const insights = useMemo(() => computeInsights(apps), [apps]);
   const selected = apps.find((a) => a.id === selectedId) ?? null;
 
-  async function signIn() {
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        scopes: "https://www.googleapis.com/auth/gmail.readonly",
-        queryParams: { access_type: "offline", prompt: "consent" },
-      },
-    });
-  }
-
   async function handleSync() {
     if (!signedIn) {
-      await signIn();
+      setAuthPromptOpen(true);
       return;
     }
     setSyncing(true);
@@ -452,6 +442,10 @@ export function Dashboard({
         </span>
       </footer>
 
+      {authPromptOpen && (
+        <AuthPrompt onClose={() => setAuthPromptOpen(false)} />
+      )}
+
       {selected && (
         <DetailModal
           app={selected}
@@ -465,6 +459,54 @@ export function Dashboard({
           onMerge={(sourceId) => mergeApp(selected.id, sourceId)}
         />
       )}
+    </div>
+  );
+}
+
+function AuthPrompt({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/30 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-line bg-paper-raised p-7 text-center shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute right-3 top-3 rounded-lg p-1.5 text-faint hover:bg-black/[0.04] hover:text-ink"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </button>
+
+        <div className="mx-auto flex h-12 w-14 items-center justify-center rounded-xl border border-line bg-paper">
+          <TallyMark className="h-6 w-7 text-ink" />
+        </div>
+        <h3 className="mt-4 text-lg font-semibold tracking-tight text-ink">
+          Sign in to start tallying
+        </h3>
+        <p className="mt-1.5 text-sm leading-relaxed text-muted">
+          You&apos;re not signed in yet. Connect your Google account to let Tally read
+          your inbox and count your applications.
+        </p>
+        <div className="mt-6 flex flex-col items-center gap-3">
+          <SignInButton className="w-full px-6 py-3 text-sm" />
+          <p className="text-[12px] text-faint">
+            Read-only Gmail access. Tally never sends or alters mail.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
