@@ -73,7 +73,10 @@ const STAGE_PATTERNS: { stage: Stage; patterns: RegExp[] }[] = [
       /\bnot to move forward\b/i,
       /\bmove forward with other candidates\b/i,
       /\bother candidates\b/i,
-      /\bnot (?:been )?(?:selected|chosen)\b/i,
+      // Require a past-tense auxiliary so a decisive "you were not selected"
+      // matches but a conditional "if you are not selected" (common in
+      // application *confirmations*) does not.
+      /\b(?:have|has|had|were|was) not (?:been )?(?:selected|chosen)\b/i,
       /\bno longer (?:be )?under consideration\b/i,
       /\bdecided not to (?:proceed|move)\b/i,
       /\bafter careful consideration\b/i,
@@ -92,7 +95,11 @@ const STAGE_PATTERNS: { stage: Stage; patterns: RegExp[] }[] = [
       /\boffer of (?:employment|internship)\b/i,
       /\boffer letter\b/i,
       /\bwe(?:'| woul)d like to offer\b/i,
-      /\byour (?:job |internship )?offer\b/i,
+      // "your offer letter / your offer details" is a real signal; a bare
+      // "your job offer" is NOT — it matches fraud-warning newsletters
+      // ("the authenticity of your job offer"). Require positive context.
+      /\byour offer (?:letter|details|package)\b/i,
+      /\bcongratulations\b[\s\S]{0,80}\boffer\b/i,
     ],
   },
   {
@@ -106,7 +113,10 @@ const STAGE_PATTERNS: { stage: Stage; patterns: RegExp[] }[] = [
       /\binterview (?:invitation|invite|request)\b/i,
       /\b(?:would like to|like to|want to) (?:speak|chat|meet|connect) (?:with you )?(?:about|regarding) (?:your application|the (?:role|position))/i,
       /\bavailability (?:for|to schedule)\b.*\b(?:interview|call|chat)\b/i,
-      /\bnext (?:round|step)s? (?:in|of) (?:the|your) (?:interview|hiring|application|process)\b/i,
+      // Only a genuinely interview-specific "next step". The old version also
+      // matched "next step in the process/application", which fires on OA and
+      // confirmation emails (e.g. IBM's assessment invite).
+      /\bnext (?:round|step)s? (?:in|of) (?:the |your |our )?(?:interviews?|hiring process)\b/i,
       /\bhiring manager (?:would like|wants)\b/i,
     ],
   },
@@ -184,12 +194,45 @@ function cleanCompany(raw: string): string | null {
   return titleCase(c);
 }
 
+// Funnel-only ranking used to break ties among non-decisive stages.
+const FUNNEL_RANK: Partial<Record<Stage, number>> = { interview: 3, oa: 2, applied: 1 };
+
+/**
+ * Decide a single email's stage from how many patterns of each stage it hits.
+ *
+ * This is evidence-based rather than pure first-match-by-priority: an OA email
+ * that incidentally trips one interview phrase shouldn't be filed as an
+ * interview when its assessment signals are stronger. BUT the decisive
+ * terminal stages (rejected / offer) still win outright when their (now
+ * high-precision) patterns fire — otherwise a rejection that also says
+ * "thank you for applying" would be scored down to "applied".
+ */
 function detectStage(haystack: string): { stage: Stage; confidence: number } | null {
+  const hits: Partial<Record<Stage, number>> = {};
   for (const { stage, patterns } of STAGE_PATTERNS) {
-    const hits = patterns.filter((p) => p.test(haystack)).length;
-    if (hits > 0) return { stage, confidence: Math.min(0.55 + hits * 0.15, 0.95) };
+    const n = patterns.filter((p) => p.test(haystack)).length;
+    if (n > 0) hits[stage] = n;
   }
-  return null;
+  const conf = (n: number) => Math.min(0.55 + n * 0.15, 0.95);
+
+  // Decisive stages override (checked in funnel-terminal order).
+  if (hits.rejected) return { stage: "rejected", confidence: conf(hits.rejected) };
+  if (hits.offer) return { stage: "offer", confidence: conf(hits.offer) };
+
+  // Among the rest, most evidence wins; ties go to the more advanced stage.
+  let best: Stage | null = null;
+  for (const s of ["interview", "oa", "applied"] as Stage[]) {
+    const n = hits[s];
+    if (!n) continue;
+    if (
+      best === null ||
+      n > hits[best]! ||
+      (n === hits[best]! && FUNNEL_RANK[s]! > FUNNEL_RANK[best]!)
+    ) {
+      best = s;
+    }
+  }
+  return best ? { stage: best, confidence: conf(hits[best]!) } : null;
 }
 
 function extractCompany(email: ParsedEmail): string {
@@ -235,9 +278,15 @@ function extractCompany(email: ParsedEmail): string {
 function extractRole(email: ParsedEmail): string | null {
   const text = `${email.subject}\n${email.body.slice(0, 800)}`;
   const patterns = [
+    // ATS requisition line: "Ref: 58806 - AI Foundations - Software Engineer -
+    // Research Internship: 2026" / "...application - 87239 - Associate Developer
+    // Intern 2026". Capture the title after the req number, up to the year. This
+    // is the most reliable role signal and consolidates an app's emails.
+    /\b(?!20\d{2}\b)\d{4,6}\b\s*[-–—:]\s*([A-Za-z][A-Za-z0-9/&.,\-+ ]{3,70}?)(?=\s*:|\s*\n|\s+(?:–|-)?\s*20\d{2}\b|$)/,
     /(?:application|applying|apply)\s+for\s+(?:the\s+|our\s+|a\s+)?([A-Za-z0-9/&,\-+ ]{3,55}?)(?:\s+(?:position|role|internship|opportunity|opening)|\s+at\b|\s+\(|[.,!?\n]|$)/i,
     /(?:the|your|our)\s+([A-Za-z0-9/&,\-+ ]{3,55}?)\s+(?:position|role|internship|opening)\b/i,
-    /position(?:\s+of|\s*:)?\s+([A-Za-z0-9/&,\-+ ]{3,55}?)(?:[.,!?\n]|\s+at\b|$)/i,
+    // Require an explicit "of"/":" — bare "position at IBM" used to capture "at IBM".
+    /position(?:\s+of|\s*:)\s+([A-Za-z0-9/&,\-+ ]{3,55}?)(?:[.,!?\n]|\s+at\b|$)/i,
     /\b([A-Za-z0-9/&,\-+ ]{3,45}?\b(?:intern|internship|co[\s-]?op|engineer|developer|analyst|scientist|manager|designer|consultant|associate|researcher))\b/i,
   ];
   for (const p of patterns) {
@@ -245,7 +294,7 @@ function extractRole(email: ParsedEmail): string | null {
     if (m?.[1]) {
       let role = m[1].replace(/\s+/g, " ").trim().replace(/[.,;:]+$/, "");
       if (/^(the|your|our|a|an)\b/i.test(role)) role = role.replace(/^(the|your|our|a|an)\s+/i, "");
-      if (role.length >= 3 && role.length <= 55) return titleCase(role);
+      if (role.length >= 3 && role.length <= 70) return titleCase(role);
     }
   }
   return null;
@@ -265,14 +314,29 @@ export function classifyWithRules(email: ParsedEmail): Classification {
   // never if it's clearly a newsletter without strong application phrasing.
   const relevant = (Boolean(detected) || ats) && !(isNoise(domain) && !detected);
 
+  const company = extractCompany(email);
+  let role = sanitizeRole(extractRole(email));
+  // A "role" that's really just the company name ("At IBM" -> "IBM") is not a
+  // role; null it so it doesn't become a junk label or split the application.
+  if (role && roleIsJustCompany(role, company)) role = null;
+
   return {
     relevant,
     stage: detected?.stage ?? "applied",
-    company: extractCompany(email),
-    role: sanitizeRole(extractRole(email)),
+    company,
+    role,
     confidence: detected?.confidence ?? (ats ? 0.4 : 0.2),
     source: "rules",
   };
+}
+
+/** True when every token of the role is part of the company name. */
+function roleIsJustCompany(role: string, company: string): boolean {
+  const rk = normRole(role);
+  if (!rk) return false;
+  const companyTokens = new Set(normCompany(company).split(" ").filter(Boolean));
+  if (!companyTokens.size) return false;
+  return rk.split(" ").every((t) => companyTokens.has(t));
 }
 
 // ---------------------------------------------------------------------------
@@ -307,7 +371,7 @@ const INTERVIEW_SIGNAL =
   /\b(interview|phone screen|video (?:call|interview)|on-?site|hiring manager|schedule (?:a|an|your|some time|time)|your availability|availability (?:for|to)|times? (?:that )?work|meet with|speak with (?:the|our|a)|(?:chat|call|conversation|connect) with (?:the|our|a|us|me)|coffee chat|recruiter call|next round|technical screen|book a time|set up a (?:call|time|chat))\b/i;
 // Require real offer phrasing — a bare "offer" appears in tons of non-offer mail.
 const OFFER_SIGNAL =
-  /\b(pleased to (?:offer|extend)|excited to offer|delighted to offer|happy to offer|extend(?:ing)? (?:you )?an offer|offer of (?:employment|internship)|offer letter|formal offer|your (?:internship |job )?offer)\b/i;
+  /\b(pleased to (?:offer|extend)|excited to offer|delighted to offer|happy to offer|extend(?:ing)? (?:you )?an offer|offer of (?:employment|internship)|offer letter|formal offer|your offer (?:letter|details|package))\b/i;
 const OA_SIGNAL =
   /\b(assessment|coding (?:challenge|test|exercise)|hackerrank|codesignal|codility|take[- ]home|online test|skills test)\b/i;
 
@@ -324,7 +388,16 @@ const ROLE_JUNK = new Set([
   "interest", "qualifications", "application", "applications", "team", "role",
   "position", "program", "update", "status", "thanks", "thank", "your", "our",
   "for", "and", "with", "here", "now", "today", "details", "information",
+  // sentence-fragment words that leaked into roles ("Specific Requirements Of
+  // The", "Careers From Day One", "At IBM", "For Completion")
+  "specific", "requirements", "requirement", "completion", "careers", "career",
+  "day", "one", "see", "how", "from", "at", "of", "in", "on", "to", "by", "a",
+  "an", "we", "you", "are", "is", "be", "will",
 ]);
+
+// Leading words that are never the start of a real job title; strip them.
+const ROLE_LEADING_JUNK =
+  /^(?:at|of|in|on|to|by|for|with|from|the|a|an|your|our|this|that|we|you|are|is)\b\s*/i;
 
 /** Strip req-ids/dates/locations and reject sentence-fragment junk roles. */
 function sanitizeRole(role: string | null): string | null {
@@ -339,6 +412,8 @@ function sanitizeRole(role: string | null): string | null {
     .replace(/\s+/g, " ")
     .replace(/^[\s,.\-–—|]+|[\s,.\-–—|]+$/g, "")
     .trim();
+  // Strip leading prepositions/articles ("At IBM" -> "IBM", "Of The Team" -> "Team").
+  while (ROLE_LEADING_JUNK.test(r)) r = r.replace(ROLE_LEADING_JUNK, "").trim();
   if (!r) return null;
   const words = r.split(/\s+/);
   // A single common word ("This", "Future", "Right") is not a real title.
@@ -347,7 +422,7 @@ function sanitizeRole(role: string | null): string | null {
   if (words.length <= 3 && words.every((w) => ROLE_JUNK.has(w.toLowerCase()))) return null;
   // Must contain at least one letter.
   if (!/[A-Za-z]{2,}/.test(r)) return null;
-  if (r.length > 55) r = r.slice(0, 55).trim();
+  if (r.length > 70) r = r.slice(0, 70).trim();
   return r;
 }
 
