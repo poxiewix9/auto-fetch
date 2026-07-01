@@ -168,6 +168,34 @@ function isNoise(domain: string): boolean {
   return NOISE_DOMAINS.some((d) => domain.includes(d));
 }
 
+// Assessment/interview PLATFORMS. Mail comes *from* these on behalf of a real
+// employer, so their name/domain must never be used as the company (the hiring
+// company is named in the subject/body, e.g. "Susquehanna invited you ...").
+const VENDOR_DOMAINS = [
+  "codesignal.com",
+  "hackerrank.com",
+  "hackerearth.com",
+  "codility.com",
+  "coderpad.io",
+  "karat.com",
+  "hirevue.com",
+  "codesubmit.io",
+  "qualified.io",
+  "testgorilla.com",
+];
+const VENDOR_NAMES = new Set([
+  "codesignal", "hackerrank", "hackerearth", "codility", "coderpad",
+  "karat", "hirevue", "codesubmit", "qualified", "testgorilla",
+]);
+
+function isVendorDomain(domain: string): boolean {
+  return VENDOR_DOMAINS.some((d) => domain.includes(d));
+}
+
+function isVendorName(name: string): boolean {
+  return VENDOR_NAMES.has(name.toLowerCase().replace(/[^a-z]/g, ""));
+}
+
 function titleCase(s: string): string {
   return s
     .trim()
@@ -242,6 +270,12 @@ function extractCompany(email: ParsedEmail): string {
 
   // 1) Subject/body relationship patterns.
   const patterns = [
+    // Employer named in vendor/recruiter mail ("Susquehanna invited you ...",
+    // "interest in Susquehanna", "someone from Susquehanna to take ..."). These
+    // run first so a CodeSignal/recruiter email resolves to the real company.
+    /([A-Z][A-Za-z0-9&.\- ]{1,40}?) (?:invited you|is waiting for)\b/,
+    /\bfrom ([A-Z][A-Za-z0-9&.\- ]{1,40}?) to (?:take|complete|schedule)\b/,
+    /\binterest(?:ed)? in ([A-Z][A-Za-z0-9&.\- ]{1,40}?)(?:[.,!?\n]|$|\s+for\b)/,
     /(?:applying|application)\s+(?:to|with|at)\s+([A-Z][A-Za-z0-9&.\- ]{1,40}?)(?:[.,!?\n]|$|\s+for\b|\s+as\b|\s+team\b)/,
     /thank you for applying(?:\s+to)?\s+([A-Z][A-Za-z0-9&.\- ]{1,40}?)(?:[.,!?\n]|$|\s+for\b)/i,
     /(?:interview|opportunity|position|role|internship)\s+(?:at|with)\s+([A-Z][A-Za-z0-9&.\- ]{1,40}?)(?:[.,!?\n]|$|\s+team\b)/,
@@ -257,14 +291,15 @@ function extractCompany(email: ParsedEmail): string {
   }
 
   // 2) Sender display name (ATS usually sets this to the company), unless it's
-  //    obviously a person (recruiter) like "Negron, Jennifer".
-  if (fromName && !looksLikePerson(fromName)) {
+  //    obviously a person (recruiter) like "Negron, Jennifer", or an assessment
+  //    vendor (CodeSignal/HackerRank) which is never the employer.
+  if (fromName && !looksLikePerson(fromName) && !isVendorName(fromName)) {
     const c = cleanCompany(fromName);
-    if (c && !looksLikePerson(c)) return c;
+    if (c && !looksLikePerson(c) && !isVendorName(c)) return c;
   }
 
   // 3) Company-owned domain (e.g. careers@stripe.com -> Stripe).
-  if (domain && !isAts(domain) && !isNoise(domain)) {
+  if (domain && !isAts(domain) && !isVendorDomain(domain) && !isNoise(domain)) {
     const parts = domain.split(".");
     const root = parts.length >= 2 ? parts[parts.length - 2] : parts[0];
     if (root && root.length > 1 && !/^(mail|email|smtp|notify|notifications|info|hello|app)$/i.test(root)) {
@@ -283,6 +318,8 @@ function extractRole(email: ParsedEmail): string | null {
     // Intern 2026". Capture the title after the req number, up to the year. This
     // is the most reliable role signal and consolidates an app's emails.
     /\b(?!20\d{2}\b)\d{4,6}\b\s*[-–—:]\s*([A-Za-z][A-Za-z0-9/&.,\-+ ]{3,70}?)(?=\s*:|\s*\n|\s+(?:–|-)?\s*20\d{2}\b|$)/,
+    // Explicit "(following )role: <title>" / "position: <title>" (e.g. iCIMS).
+    /\b(?:following\s+)?(?:role|position)\s*:\s*([A-Za-z][A-Za-z0-9/&,\-+ ]{3,60}?)(?=\s*[:.,!?\n]|\s+at\b|\s+20\d{2}\b|$)/i,
     /(?:application|applying|apply)\s+for\s+(?:the\s+|our\s+|a\s+)?([A-Za-z0-9/&,\-+ ]{3,55}?)(?:\s+(?:position|role|internship|opportunity|opening)|\s+at\b|\s+\(|[.,!?\n]|$)/i,
     /(?:the|your|our)\s+([A-Za-z0-9/&,\-+ ]{3,55}?)\s+(?:position|role|internship|opening)\b/i,
     // Require an explicit "of"/":" — bare "position at IBM" used to capture "at IBM".
@@ -308,7 +345,7 @@ export function classifyWithRules(email: ParsedEmail): Classification {
   const domain = domainOf(email.fromEmail);
   const haystack = `${email.subject}\n${email.snippet}\n${email.body.slice(0, 2000)}`;
   const detected = detectStage(haystack);
-  const ats = isAts(domain);
+  const ats = isAts(domain) || isVendorDomain(domain);
 
   // Relevant only if it reads like a funnel email OR comes from an ATS, and
   // never if it's clearly a newsletter without strong application phrasing.
@@ -393,6 +430,8 @@ const ROLE_JUNK = new Set([
   "specific", "requirements", "requirement", "completion", "careers", "career",
   "day", "one", "see", "how", "from", "at", "of", "in", "on", "to", "by", "a",
   "an", "we", "you", "are", "is", "be", "will",
+  // "Candidate Assessment Process For The Following"
+  "candidate", "candidates", "process", "following", "next", "steps", "step",
 ]);
 
 // Leading words that are never the start of a real job title; strip them.
