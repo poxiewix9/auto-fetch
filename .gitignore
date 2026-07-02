@@ -40,3 +40,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# eval fixtures derived from a real inbox stay local unless explicitly shared;
+# the harness auto-loads any eval/fixtures/*.json present.
+/eval/fixtures/real.json
+
+# local operator scripts (reset/reclassify/replay against prod creds)
+/scripts/
+
+# local board-diff report (contains application history)
+/BOARD-DIFF.txt

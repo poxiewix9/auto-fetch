@@ -1,0 +1,288 @@
+[
+  {
+    "id": "skp-company-best-buy",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "company names containing sign-off-ish words (Best) must survive validation",
+    "email": {
+      "subject": "Thank You for Applying to Best Buy",
+      "fromName": "Best Buy Talent Acquisition",
+      "fromEmail": "bestbuy@myworkday.com",
+      "body": "Hi Alex,\n\nThank you for applying to Best Buy. We have received your application for the Retail Analytics Intern position and our recruiting team is reviewing it now.\n\nBest Buy Talent Acquisition"
+    },
+    "expect": { "relevant": true, "stage": "applied", "company": "Best Buy", "role": "Retail Analytics Intern" }
+  },
+  {
+    "id": "skp-company-spring-health",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "company names containing season words (Spring) must survive validation",
+    "email": {
+      "subject": "Thank you for applying to Spring Health!",
+      "fromName": "Spring Health",
+      "fromEmail": "no-reply@us.greenhouse-mail.io",
+      "body": "Hi Alex,\n\nThank you for your interest in Spring Health! We have received your application for the Data Science Intern role and will be reviewing it shortly.\n\nBest,\nThe Spring Health Team"
+    },
+    "expect": { "relevant": true, "stage": "applied", "company": "Spring Health", "role": "Data Science Intern" }
+  },
+  {
+    "id": "skp-company-recruiter-initial-mailbox",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "recruiter with first-initial mailbox (schen@) must never become the company",
+    "email": {
+      "subject": "Your Harborlight Labs application",
+      "fromName": "Sarah Chen",
+      "fromEmail": "schen@harborlightlabs.com",
+      "body": "Hi Alex,\n\nThanks for applying to the Software Engineer Intern role at Harborlight Labs. I'd love to set up a 30-minute phone screen to talk through your background. Could you share your availability for this week?\n\nBest,\nSarah Chen\nHarborlight Labs University Recruiting"
+    },
+    "expect": { "relevant": true, "stage": "interview", "company": "Harborlight Labs", "role": "Software Engineer Intern" }
+  },
+  {
+    "id": "skp-company-greenhouse-person-from",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "ATS mail with a recruiter's name as From — company from body team signature",
+    "email": {
+      "subject": "Update on your Hypergrid application",
+      "fromName": "Jordan Ramirez",
+      "fromEmail": "no-reply@us.greenhouse-mail.io",
+      "body": "Hi Alex,\n\nThank you for the time you invested in applying for the Backend Intern role. Unfortunately, we have decided to move forward with other candidates.\n\nWe wish you the best in your search.\n\nThe Hypergrid Team"
+    },
+    "expect": { "relevant": true, "stage": "rejected", "company": ["Hypergrid", "Jordan Ramirez"], "role": "Backend Intern" }
+  },
+  {
+    "id": "skp-company-cctld",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "two-level TLD (co.uk) must not yield 'Co' as the company",
+    "email": {
+      "subject": "Your application to Rolls-Royce",
+      "fromName": "",
+      "fromEmail": "graduaterecruitment@rolls-royce.co.uk",
+      "body": "Dear Alex,\n\nThank you for your application to Rolls-Royce. Your application has been received and is being reviewed by our early careers team.\n\nKind regards,\nRolls-Royce Early Careers"
+    },
+    "expect": { "relevant": true, "stage": "applied", "company": "Rolls-Royce" }
+  },
+  {
+    "id": "skp-company-marks-and-spencer",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'and' inside a company name must not truncate the capture",
+    "email": {
+      "subject": "Thank you for applying to Marks and Spencer",
+      "fromName": "M&S Careers",
+      "fromEmail": "careers@marksandspencer.com",
+      "body": "Dear Alex,\n\nThank You for Applying to Marks and Spencer. Your application for the Software Engineering Intern position has been received.\n\nMarks and Spencer Recruitment Team"
+    },
+    "expect": { "relevant": true, "stage": "applied", "company": ["Marks and Spencer", "M&S", "Marksandspencer"], "role": "Software Engineering Intern" }
+  },
+  {
+    "id": "skp-role-it-intern",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "titles containing former fragment words (IT) must survive",
+    "email": {
+      "subject": "Application received: IT Intern",
+      "fromName": "Fernwood Insurance",
+      "fromEmail": "recruiting@fernwoodinsurance.com",
+      "body": "Dear Alex,\n\nWe have received your application for the IT Intern position at Fernwood Insurance. Our team will review your qualifications and reach out with next steps.\n\nFernwood Insurance Recruiting"
+    },
+    "expect": { "relevant": true, "stage": "applied", "company": "Fernwood Insurance", "role": "IT Intern" }
+  },
+  {
+    "id": "skp-role-customer-experience",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "titles containing 'Experience'/'Process' style words must survive",
+    "email": {
+      "subject": "Thanks for applying!",
+      "fromName": "Braecrest",
+      "fromEmail": "no-reply@braecrest.com",
+      "body": "Hi Alex,\n\nThank you for applying to the Customer Experience Intern role at Braecrest. Your application is under review.\n\nThe Braecrest Team"
+    },
+    "expect": { "relevant": true, "stage": "applied", "company": "Braecrest", "role": "Customer Experience Intern" }
+  },
+  {
+    "id": "skp-role-hiring-manager-prose",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'interview with the Hiring Manager' prose must not become a role",
+    "email": {
+      "subject": "Interview Availability - Next Steps",
+      "fromName": "Quarrystone Recruiting",
+      "fromEmail": "recruiting@quarrystone.com",
+      "body": "Hi Alex,\n\nWe'd like to schedule your interview with the Hiring Manager for next week. Please share your availability for a 45-minute call.\n\nQuarrystone Recruiting Team"
+    },
+    "expect": { "relevant": true, "stage": "interview", "company": "Quarrystone", "role": null }
+  },
+  {
+    "id": "skp-stage-visa-disclaimer",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'unable to offer visa sponsorship' boilerplate must not reject a live interview invite",
+    "email": {
+      "subject": "Interview invitation - Software Intern",
+      "fromName": "Arbor Dynamics",
+      "fromEmail": "recruiting@arbordynamics.com",
+      "body": "Hi Alex,\n\nWe would like to schedule a 30-minute phone screen for your Software Intern application. Please share your availability for this week or next.\n\nPlease note: Arbor Dynamics is unable to offer visa sponsorship or relocation assistance for this position.\n\nArbor Dynamics Recruiting"
+    },
+    "expect": { "relevant": true, "stage": "interview", "company": "Arbor Dynamics", "role": "Software Intern" }
+  },
+  {
+    "id": "skp-stage-notify-boilerplate",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'applicants not selected will be notified' future-process boilerplate stays applied",
+    "email": {
+      "subject": "Application received",
+      "fromName": "Bellweather Insurance",
+      "fromEmail": "careers@bellweather.com",
+      "body": "Dear Alex,\n\nThank you for applying to the Data Intern position at Bellweather Insurance. Your application has been received.\n\nApplicants not selected for this position will be notified by email at the conclusion of the recruitment process.\n\nBellweather Insurance Talent Acquisition"
+    },
+    "expect": { "relevant": true, "stage": "applied", "company": ["Bellweather Insurance", "Bellweather"], "role": "Data Intern" }
+  },
+  {
+    "id": "skp-stage-different-direction",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'go in a different direction' rejection family",
+    "email": {
+      "subject": "Your application to Coppervale",
+      "fromName": "Coppervale",
+      "fromEmail": "talent@coppervale.com",
+      "body": "Hi Alex,\n\nThank you for interviewing for the Platform Intern role. After much deliberation, the team has decided to go in a different direction for this position. We were impressed by your background and encourage you to apply to future openings.\n\nCoppervale Talent Team"
+    },
+    "expect": { "relevant": true, "stage": "rejected", "company": "Coppervale", "role": ["Platform Intern"] }
+  },
+  {
+    "id": "skp-stage-no-longer-considered",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "passive 'no longer being considered' is a rejection, not a review status",
+    "email": {
+      "subject": "Application status update",
+      "fromName": "Windmere",
+      "fromEmail": "windmere@myworkday.com",
+      "body": "Dear Alex,\n\nThis is an update regarding your application for the Systems Intern position. Your application is no longer being considered for this position.\n\nWe appreciate your interest in Windmere and encourage you to explore future openings.\n\nWindmere Talent Acquisition"
+    },
+    "expect": { "relevant": true, "stage": "rejected", "company": "Windmere", "role": "Systems Intern" }
+  },
+  {
+    "id": "skp-stage-positions-filled",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "plural 'positions have been filled' rejection",
+    "email": {
+      "subject": "Summer internship update",
+      "fromName": "Glenhaven Careers",
+      "fromEmail": "careers@glenhaven.com",
+      "body": "Dear Alex,\n\nThank you for your interest in our internship program. All of our internship positions have been filled for this summer. We encourage you to apply again next season.\n\nGlenhaven Recruiting"
+    },
+    "expect": { "relevant": true, "stage": "rejected", "company": "Glenhaven" }
+  },
+  {
+    "id": "skp-stage-werent-selected",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "contraction 'weren't selected' rejection",
+    "email": {
+      "subject": "Your application",
+      "fromName": "Tidewater Analytics",
+      "fromEmail": "recruiting@tidewateranalytics.com",
+      "body": "Hi Alex,\n\nUnfortunately you weren't selected to move forward for the Data Engineering Intern position. We received a large number of strong applications this cycle.\n\nTidewater Analytics Recruiting"
+    },
+    "expect": { "relevant": true, "stage": "rejected", "company": "Tidewater Analytics", "role": "Data Engineering Intern" }
+  },
+  {
+    "id": "skp-stage-congrats-selected-interview",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'Congratulations… We offer virtual and onsite options' is interview, not offer",
+    "email": {
+      "subject": "Congratulations - next steps with Arcadia",
+      "fromName": "Arcadia",
+      "fromEmail": "recruiting@arcadia.com",
+      "body": "Hi Alex,\n\nCongratulations! You have been selected to interview with the Arcadia team. We offer both virtual and onsite options for your interview. Please pick a time on our calendar link below.\n\nArcadia University Recruiting"
+    },
+    "expect": { "relevant": true, "stage": "interview", "company": "Arcadia" }
+  },
+  {
+    "id": "skp-rel-footer-rejection",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "rejection with heavy talent-community/job-alert footer must stay relevant",
+    "email": {
+      "subject": "Update on your application",
+      "fromName": "Vantora",
+      "fromEmail": "noreply@vantora.com",
+      "body": "Hi Alex,\n\nThank you for applying to the Software Engineer Intern position. After careful review, we have decided to move forward with other candidates.\n\nJoin our Talent Community to stay in touch! Set up a job alert so you don't miss future openings. You are receiving this email because you applied to a position at Vantora. Unsubscribe.\n\nVantora Recruiting"
+    },
+    "expect": { "relevant": true, "stage": "rejected", "company": "Vantora", "role": "Software Engineer Intern" }
+  },
+  {
+    "id": "skp-rel-offer-footer",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "offer with benefits marketing and unsubscribe footer must stay relevant",
+    "email": {
+      "subject": "Your offer from Chewery",
+      "fromName": "Chewery Recruiting",
+      "fromEmail": "recruiting@chewery.com",
+      "body": "Dear Alex,\n\nWe are pleased to offer you the Software Engineer Intern position at Chewery for Summer 2026! Your offer letter is attached.\n\nOur benefits include health insurance with 100% of the premium paid, plus wellness stipends.\n\nUnsubscribe | Update your preferences"
+    },
+    "expect": { "relevant": true, "stage": "offer", "company": "Chewery", "role": "Software Engineer Intern" }
+  },
+  {
+    "id": "skp-rel-re-interview-confirm",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "recruiter reply on RE: thread confirming a scheduled interview stays relevant",
+    "email": {
+      "subject": "RE: Interview availability - Alex Doe",
+      "fromName": "Jane Kim",
+      "fromEmail": "jane.kim@northgale.com",
+      "body": "Hi Alex,\n\nGreat news — I've scheduled your interview for Tuesday, July 8 at 2:00 PM CT with our platform team. You'll receive a calendar invite shortly.\n\nBest,\nJane Kim\nNorthgale University Recruiting"
+    },
+    "expect": { "relevant": true, "stage": "interview", "company": "Northgale" }
+  },
+  {
+    "id": "skp-rel-freemail-referral",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "a friend's referral request from a personal mailbox is not a status update",
+    "email": {
+      "subject": "Quick favor - referral?",
+      "fromName": "Arjun Mehta",
+      "fromEmail": "arjun.mehta1@gmail.com",
+      "body": "Hey Alex!\n\nI just applied to the SWE Intern position at your company and my application is under review. Could you refer me? Happy to send my resume.\n\nThanks!\nArjun"
+    },
+    "expect": { "relevant": false }
+  },
+  {
+    "id": "skp-rel-viewed-notification",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "board 'application was viewed' activity ping is not a status update",
+    "email": {
+      "subject": "Your application was viewed by Datadonk",
+      "fromName": "LinkedIn",
+      "fromEmail": "jobs-noreply@linkedin.com",
+      "body": "Hi Alex,\n\nYour application was viewed by the hiring team at Datadonk. See how you compare to 250 other applicants.\n\nUnsubscribe | Manage your job alerts"
+    },
+    "expect": { "relevant": false }
+  },
+  {
+    "id": "skp-rel-ra-rejection",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "university student-job rejection (Research Assistant) survives the education gate",
+    "email": {
+      "subject": "Undergraduate Research Assistant - decision",
+      "fromName": "UT Austin Student Jobs",
+      "fromEmail": "studentjobs@austin.utexas.edu",
+      "body": "Dear Alex,\n\nThank you for your interest in the Undergraduate Research Assistant position in the Department of Computer Science. We regret to inform you that you have not been selected for this position.\n\nEnrollment-verified students are encouraged to apply to other openings each semester.\n\nUT Austin Student Employment"
+    },
+    "expect": { "relevant": true, "stage": "rejected", "company": ["UT Austin Student", "Utexas", "UT Austin"], "role": ["Undergraduate Research Assistant", "Research Assistant"] }
+  }
+]
