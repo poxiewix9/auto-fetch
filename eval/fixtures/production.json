@@ -1,0 +1,195 @@
+[
+  {
+    "id": "prod-linkedin-feed-digest",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "social feed digest with third-party post text mentioning interviews must be irrelevant",
+    "email": {
+      "subject": "Rohan Iyer reacted to this post: Proud to announce a major milestone…",
+      "fromName": "LinkedIn",
+      "fromEmail": "updates-noreply@linkedin.com",
+      "body": "Rohan Iyer liked this\n\nPriya N. LIKE PRAISE 47, 6 Comments\n\nRead more: https://www.linkedin.com/comm/feed/update/urn:li:activity:12345\n\nSuggested for you\n\nAmanda L. shared a post: I totally botched a technical interview last week. Here's what I learned about phone screens and how to schedule your prep time.\nLIKE 41, 1 Comment"
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "prod-admissions-decision",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "college admissions decision mail (admissions@ sender) is never a job card",
+    "email": {
+      "subject": "Your Admission Decision",
+      "fromName": "Kestwick University",
+      "fromEmail": "admissions@kestwick.edu",
+      "body": "Vedanth, your admission decision will be available this Friday at 4:00 PM in your applicant portal. Log in to view your decision and next steps for enrollment.\n\nKestwick University Office of Admissions"
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "prod-edu-nudge",
+    "source": "synthetic",
+    "split": "dev",
+    "note": ".edu sender without any job title is education mail, even with 'application' language",
+    "email": {
+      "subject": "What's Next After Applying?",
+      "fromName": "Brookfield University",
+      "fromEmail": "reply@admit.brookfield.edu",
+      "body": "Dear Alex, Great work submitting your application! So, what's next? Explore campus visit dates, financial aid resources, and how to check your application status in the portal."
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "prod-account-verification",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "account-verification mail is plumbing, not a status update",
+    "email": {
+      "subject": "Verify Your Email Address to Complete Account Setup",
+      "fromName": "Meridian Careers Portal",
+      "fromEmail": "noreply@meridian.com",
+      "body": "For your account security, please verify your email address to complete your Meridian careers account setup. This link expires in 24 hours."
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "prod-career-portal-login",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "career-site login credentials mail is not an application event",
+    "email": {
+      "subject": "Your Career Website Login Details",
+      "fromName": "",
+      "fromEmail": "humanresources1@vantrell.com",
+      "body": "YOUR VANTRELL CAREER WEBSITE LOGIN DETAILS\n\nAlex:\n\nThank you for registering. Your username and password for the Vantrell career website are below. Keep your login details safe."
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "prod-recruiting-blast-opening-soon",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'applications opening soon / apply now' campus-recruiting blast is marketing",
+    "email": {
+      "subject": "Corvid 2027 Summer Analyst Applications Opening Soon",
+      "fromName": "Americas Campus Recruiting",
+      "fromEmail": "campusrec@corvid.com",
+      "body": "We are excited to announce that Corvid 2027 Summer Analyst applications are opening soon. Apply now to secure your spot for our early deadline, and don't miss our virtual insight sessions.\n\nYou are receiving this email because you joined our talent community."
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "prod-board-blast-no-application",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "job-board blast with no reference to an actual application",
+    "email": {
+      "subject": "Remote Customer Service Role – Immediate Openings (Work From Home)",
+      "fromName": "Harlow Group via WayUp",
+      "fromEmail": "info@wayup.com",
+      "body": "Hi Alex,\n\nThe Harlow Group is hiring Customer Service Associates — remote, flexible hours, immediate openings. We think you'd be a great fit based on your WayUp profile. Apply today!\n\nUnsubscribe"
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "prod-chatbot-display-name",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "ATS chatbot display 'X Hiring Assistant from Y Group' — company is Y",
+    "email": {
+      "subject": "Application Update for Ridgemont Restaurant Group",
+      "fromName": "Ridgemont Hiring Assistant from Ridgemont Restaurant Group",
+      "fromEmail": "olivia.alerts@paradox.ai",
+      "body": "Hi Alex! Thanks for applying to Ridgemont Restaurant Group. Your application for the Software Intern position has been received and is being reviewed. I'll keep you posted on next steps!"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "applied",
+      "company": [
+        "Ridgemont Restaurant",
+        "Ridgemont Restaurant Group"
+      ],
+      "role": "Software Intern"
+    }
+  },
+  {
+    "id": "prod-transactional-schedule-change",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "decision-looking language with zero application vocabulary is transactional mail",
+    "email": {
+      "subject": "GreenLine: Changes on your Schedule",
+      "fromName": "GreenLine USA",
+      "fromEmail": "no-reply@greenlineusa.com",
+      "body": "Your trip from Austin to Dallas on Aug 3 has been cancelled due to operational changes. We were unable to accommodate the original departure. See rebooking options or request a refund in your account."
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "prod-oa-invite-role-subject",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "OA invite naming its application in the subject must carry that role (mis-attachment guard)",
+    "email": {
+      "subject": "Invitation: Online Assessment for Software Development Engineer Fall Internship",
+      "fromName": "Corvette Student Programs",
+      "fromEmail": "sp-assessments@corvette.com",
+      "body": "Hi Alex,\n\nCongratulations! We would like to invite you to complete the first step in our recruiting process; the online assessment (OA) for the Fall Software Development Engineer Internship position. You will have 105 minutes to complete the assessment once you begin."
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "oa",
+      "company": "Corvette",
+      "role": [
+        "Software Development Engineer Fall Internship",
+        "Software Development Engineer Internship",
+        "Software Development Engineer Intern"
+      ]
+    }
+  },
+  {
+    "id": "prod-scholarship-portal",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "scholarship application portal mail is not a job application",
+    "email": {
+      "subject": "Deerfield ISD Education Foundation - Scholarship Application Received",
+      "fromName": "Deerfield ISD Education Foundation",
+      "fromEmail": "def@eformsolutions.com",
+      "body": "Dear Alex,\n\nYour scholarship application has been received by the Deerfield ISD Education Foundation. Award decisions will be posted to the scholarship portal in April. Good luck!"
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "prod-blast-forward-looking-review",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "pre-application blast: URL-inflated 'applications … will open' + 'look forward to reviewing your application' must not count as submitted evidence",
+    "email": {
+      "subject": "Halbrook 2027 Summer Analyst Applications Opening Soon",
+      "fromName": "Americas Campus Recruiting",
+      "fromEmail": "campusrec@halbrook.com",
+      "body": "We are pleased to share that applications for the Halbrook Americas 2027 Summer Internship Program<https://www.halbrook.com/careers/students> across the below businesses will open on Thursday, January 1, 2027. Once applications open, we encourage you to apply as soon as possible.\n\nEach candidate can submit up to four total applications. Thank you for your interest in Halbrook, and we look forward to reviewing your application."
+    },
+    "expect": {
+      "relevant": false
+    }
+  }
+]

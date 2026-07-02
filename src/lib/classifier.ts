@@ -307,7 +307,7 @@ const COMPANY_REJECT_WORDS = new RegExp(
 // Bare mailbox/staffing words are not companies as WHOLE strings, but must
 // survive inside names ("Hello Heart", "Info-Tech Research Group").
 const COMPANY_WHOLE_REJECT =
-  /^(?:info|hello|support|admin|mailer|via|careers?|jobs?|recruiting|recruitment|notifications?|no[- ]?reply|team|hr|talent|regards|best|global|corporate|regional|international|worldwide|early|university|graduate|campus|people|welcome|time)$/i;
+  /^(?:info|hello|support|admin|mailer|via|careers?|jobs?|recruiting|recruitment|notifications?|no[- ]?reply|team|hr|talent|regards|best|global|corporate|regional|international|worldwide|early|university|graduate|campus|people|welcome|time|americas?|emea|apac|latam|linkedin|wayup|indeed|ziprecruiter|handshake|glassdoor|monster|dice|wellfound|lensa)$/i;
 
 /** True when a "company" string is really a person's name. */
 function looksLikePerson(name: string, fromEmail?: string): boolean {
@@ -355,6 +355,12 @@ function cleanCompany(raw: string): string | null {
     .replace(/^[\s,.-]+|[\s,.:;!?-]+$/g, "")
     .trim();
   if (/@/.test(c) || /\.com|\.io|\.co\b|\.org|\.net/i.test(c)) return null;
+  // Chatbot/relay display names: "Panda Hiring Assistant from Panda Restaurant
+  // Group" → the org AFTER "from"; "McQuade Organization via WayUp" → the org
+  // BEFORE "via" (the channel comes after).
+  const fromSplit = c.match(/^.+?\s+from\s+(.{2,60})$/i);
+  if (fromSplit) c = fromSplit[1].trim();
+  c = c.replace(/\s+via\s+.{2,40}$/i, "").trim();
   // Strip recruiting-machinery words repeatedly until stable ("Workday at X",
   // "X Talent Acquisition Group"), then drop a dangling "Team"/"Group".
   for (let i = 0; i < 3; i++) {
@@ -699,6 +705,9 @@ function extractRole(email: ParsedEmail): string | null {
     new RegExp(`\\b(?:application|applying|apply|applied)\\s+(?:for|to)\\s+(?:the\\s+|our\\s+|an?\\s+)?(${ROLE_CHARS})${ROLE_END}`, "i"),
     // "interest in the X opening/position" / "interest in X"
     new RegExp(`\\binterest in\\s+(?:the\\s+)?(${ROLE_CHARS})${ROLE_END}`, "i"),
+    // "Online Assessment for <Title>" invite subjects — the title names the
+    // application the assessment belongs to.
+    new RegExp(`\\b(?:assessment|invitation)[^.!?\\n]{0,20}\\bfor\\s+(?:the\\s+|your\\s+)?(${ROLE_CHARS})${ROLE_END}`, "i"),
     // Subject formats: "Your application – TITLE", "Application received for: TITLE"
     new RegExp(`\\b(?:application|submission)[^\\n]{0,24}(?:for|–|—|-)\\s*:?\\s*(${ROLE_CHARS})${ROLE_END}`, "i"),
     // Last resort: a phrase ending in a title noun.
@@ -726,9 +735,13 @@ const INSTRUCTION_MARKERS =
 
 // Clause-level, not sentence-level: a decision clause often carries a
 // courtesy tail ("…other candidates, but we encourage you to visit our
-// careers page") that must not disqualify the decision itself.
+// careers page") that must not disqualify the decision itself. Single
+// newlines are soft wraps ("…for the role\nuntil we've received…"), so only
+// punctuation and blank lines end a clause.
 function splitClauses(haystack: string): string[] {
-  return haystack.split(/(?<=[.!?\n])|(?=,\s*(?:but|however|although|though)\b)|(?=;\s)/i);
+  return haystack
+    .replace(/(?<![.!?\n])\n(?!\n)/g, " ")
+    .split(/(?<=[.!?\n])|(?=,\s*(?:but|however|although|though)\b)|(?=;\s)/i);
 }
 
 function decisiveText(haystack: string): string {
@@ -932,6 +945,11 @@ const MARKETING_MARKERS: RegExp[] = [
   /\bdon'?t miss\b/i,
   /\bnot in consideration\b[^.!?\n]{0,60}\buntil you\b/i,
   /\bhot jobs\b/i,
+  /\bapplications?\b[^.!?\n]{0,80}\b(?:will open|are (?:now )?open|open(?:ing)? soon|open on)\b/i,
+  /\b(?:will open on|are now open(?: as of)?|applications? go(?:es)? live)\b/i,
+  /\bencourage you to apply\b/i,
+  /\bimmediate openings?\b/i,
+  /\b(?:we think |we believe )?you(?:'d| would| could)? be a (?:strong|great|good|perfect) fit\b/i,
   /\bnew (?:opportunities|openings|roles) (?:open|posted|added)\b/i,
   /\bweekly (?:digest|contest|challenge)\b/i,
   /\bearn (?:a )?badge\b/i,
@@ -956,11 +974,28 @@ const INCOMPLETE_MARKERS: RegExp[] = [
   /\bstill working on (?:the|your) application\b/i,
   /\bnot (?:been )?able to (?:fully )?complete (?:it|your application)\b/i,
 ];
+// "look forward to reviewing your application" is anticipation in a
+// pre-application blast, not evidence that an application exists.
 const SUBMITTED_MARKERS =
-  /\b(?:received your application|application (?:has been|was|is) (?:successfully )?(?:received|submitted)|successfully (?:applied|submitted)|under (?:review|consideration)|reviewing your application|thank you for applying)\b/i;
+  /\b(?:received your application|application (?:has been|was|is) (?:successfully )?(?:received|submitted)|successfully (?:applied|submitted)|under (?:review|consideration)|(?<!forward to )reviewing your application|thank you for applying)\b/i;
 
 const AUTOREPLY_MARKERS =
   /\b(?:automated (?:response|reply|message)|auto[- ]?reply|do not reply to this (?:mailbox|message|email)|responses? (?:from|to) this (?:mailbox|address)|business days? delay)\b/i;
+
+// Social-network activity digests — arbitrary third-party post text ("I
+// botched a technical interview last week") must never reach stage detection.
+const SOCIAL_MARKERS =
+  /\b(?:reacted to (?:this|a|your) post|liked (?:this|your)|commented on|shared a post|viewed your profile|invitations? to connect|wants to connect|new connections?|work anniversar(?:y|ies)|congratulate|posts? from your network|suggested for you)\b/i;
+
+// Account plumbing (verify email, login details, password) is not a status.
+const ACCOUNT_MARKERS =
+  /\b(?:verify your email|confirm your email(?: address)?|email verification|account (?:setup|security|activation)|login details|username and password|reset your password|one[- ]time (?:passcode|password)|security code)\b/i;
+
+// Every genuine funnel email references the application relationship somehow.
+// ("offer" deliberately absent: "we want to offer you a voucher" is common in
+// transactional mail, and real offers always name a position/role.)
+const APPLICATION_CONTEXT =
+  /\b(?:applicat|applie[ds]|applying|apply|candidac|candidate|position|role\b|req(?:uisition)?|job|intern|co[- ]?op|resume|résumé|cv\b|hiring|recruit|talent|assessment|interview)/i;
 
 const NONJOB_HOUSING =
   /\b(?:guest card|move[- ]?in date|monthly rent|leasing (?:agent|office)|property tour|floor ?plans?|apartment home)\b/i;
@@ -971,7 +1006,10 @@ const NONJOB_EDU: RegExp[] = [
   /\benroll(?:ment)?\b/i,
   /\bcampus visit\b/i,
   /\bfinancial aid\b/i,
-  /\bscholarships?\b/i,
+  /\bscholarships? (?:application|portal|award|deadline)\b/i,
+  /\beducation foundation\b/i,
+  /\bschool district\b/i,
+  /\b(?:freshman|sophomore) class\b/i,
 ];
 const NONJOB_EVENT: RegExp[] = [
   /\b(?:application|applied|accepted?|acceptance) to [^.!?\n]{0,50}\b(?:school|camp|conference|summit|hackathon|bootcamp|accelerator)\b/i,
@@ -1043,19 +1081,52 @@ function relevanceGates(email: ParsedEmail, text: string): Gates {
   // Personal mailboxes never deliver employer status mail.
   const freemail = isFreemail(domain) && !decisionEvidence;
 
-  // Non-job "applications" (housing/education/events). A decision outcome or
-  // a job title exempts — confirmations alone don't, since these categories
-  // send "application received" mail too.
+  // Social feed digests: board sender + activity vocabulary. Post text is
+  // arbitrary, so no amount of stage evidence rescues these.
+  const social = (board || noisy) && SOCIAL_MARKERS.test(text);
+
+  // Account plumbing (verify email / login details) is never a status update.
+  const account = ACCOUNT_MARKERS.test(text) && !decisionEvidence && !submitted;
+
+  // Job-board mail that never references an actual application is a blast.
+  const boardBlast =
+    board &&
+    !decisionEvidence &&
+    !/\b(?:your application|you (?:recently )?applied|application (?:to|for|was|has been))\b/i.test(text);
+
+  // Decision language without ANY application vocabulary is transactional
+  // mail (trip cancellations, subscription changes), not a rejection.
+  const noAppContext = !APPLICATION_CONTEXT.test(text);
+
+  // Non-job "applications" (housing/education/events). A job title exempts;
+  // decision outcomes do NOT for education — admissions decisions are still
+  // admissions. Admissions-mailbox and .edu senders without a job title are
+  // structural education signals on their own.
   const jobNoun = ROLE_TITLE_NOUN.test(text);
+  const admissionsSender =
+    /admission/i.test(email.fromEmail) || (domain.endsWith(".edu") && !jobNoun);
   const housingHits = (text.match(new RegExp(NONJOB_HOUSING.source, "gi")) ?? []).length;
   const nonjob =
-    !decisionEvidence &&
-    !jobNoun &&
-    (housingHits >= 2 ||
-      countHits(text, NONJOB_EDU) >= 2 ||
-      countHits(text, NONJOB_EVENT) >= 2);
+    (admissionsSender && !oaEvidence && !interviewEvidence) ||
+    (!jobNoun &&
+      ((!decisionEvidence && (housingHits >= 2 || countHits(text, NONJOB_EVENT) >= 2)) ||
+        countHits(text, NONJOB_EDU) >= 2));
 
-  return { marketing, incomplete, autoreply: autoreply || freemail, nonjob };
+  return {
+    marketing: marketing || boardBlast || noAppContext,
+    incomplete,
+    autoreply: autoreply || freemail || account,
+    nonjob: nonjob || social,
+  };
+}
+
+/**
+ * Structural irrelevance that even a contrary LLM verdict must not override:
+ * social digests, admissions/.edu mail, account plumbing, non-job categories.
+ */
+function hardIrrelevant(email: ParsedEmail, text: string): boolean {
+  const g = relevanceGates(email, decodeEntities(text));
+  return g.nonjob || (ACCOUNT_MARKERS.test(text) && !SUBMITTED_MARKERS.test(text));
 }
 
 // ---------------------------------------------------------------------------
@@ -1064,8 +1135,11 @@ function relevanceGates(email: ParsedEmail, text: string): Gates {
 
 export function classifyWithRules(email: ParsedEmail): Classification {
   const domain = domainOf(email.fromEmail);
+  // The snippet is a hard-truncated preview ("…can't consider you for the
+  // role[ until…]") that can fabricate decisive clauses — only use it when
+  // there is no body.
   const haystack = decodeEntities(
-    `${email.subject}\n${email.snippet}\n${email.body.slice(0, 2000)}`
+    `${email.subject}\n${email.body ? email.body.slice(0, 2000) : email.snippet}`
   );
   const detected = detectStage(haystack);
   const ats = isAts(domain) || isVendorDomain(domain);
@@ -1131,7 +1205,7 @@ If relevant, classify "stage". Be conservative: only advance the stage when the 
 - "rejected": a decisive statement that THIS application is not proceeding: not selected, not moving forward, moving forward with other candidates/applicants, position filled/closed/canceled, "wasn't the right fit", "more competitive applications", requisition closed.
 Extract:
 - "company": the hiring ORGANIZATION's common short name (e.g. "Fidelity" not "Fidelity Investments Inc"). NEVER a person's name. NEVER the ATS (Workday/Greenhouse/Lever/iCIMS/BrassRing/ADP), NEVER an assessment vendor (HackerRank/CodeSignal/Sova/HireVue/SHL), NEVER a job board (LinkedIn/WayUp/Indeed) — those are delivery channels; find the real employer in the subject, body, or signature. Never "X Talent Acquisition" — that is X. If you truly cannot tell, use "".
-- "role": ONLY the clean job title (e.g. "Software Engineer Intern"). NO requisition IDs or numbers, NO dates or "Summer 2026", NO locations, NO process words ("assessment", "interview", "OA"). Do NOT invent a role from a sentence fragment — if there is no real job title, use "".
+- "role": ONLY the clean job title (e.g. "Software Engineer Intern"). NO requisition IDs or numbers, NO dates or "Summer 2026", NO locations, NO process words ("assessment", "interview", "OA"). Do NOT invent a role from a sentence fragment, and NEVER output placeholder values like "string", "null", or a category name — when there is no real job title, use exactly "".
 - "req": the requisition/job ID for THIS application exactly as written (e.g. "REQ342669", "JR2011493", "72366", "R-2026-63180"), or "" if none is stated. This distinguishes multiple applications at the same company.`;
 
 // Hard signals required for "promoting" emails — the LLM must not advance a
@@ -1167,8 +1241,14 @@ function mergeLlmWithRules(
   llm: Partial<Classification> & { relevant: boolean; stage: Stage },
   rules: Classification,
   text: string,
-  fromEmail: string
+  email: ParsedEmail
 ): Classification {
+  const fromEmail = email.fromEmail;
+  // Structural non-job mail (admissions, social digests, account plumbing)
+  // stays irrelevant even when the model disagrees.
+  if (llm.relevant && hardIrrelevant(email, text)) {
+    return { ...rules, relevant: false, source: "llm" };
+  }
   // Company: the LLM's answer, but only if it is a plausible org name and not
   // a vendor/board; otherwise a VALIDATED rules value; otherwise Unknown.
   // Junk must never be resurrected just because a field is empty.
@@ -1186,7 +1266,13 @@ function mergeLlmWithRules(
   // only when the LLM did not answer at all. Prose/process outputs from the
   // model ("Online Assessment") are rejected the same way rules roles are.
   let llmRole = sanitizeRole(llm.role ?? null);
-  if (llmRole && (ROLE_FRAGMENT_WORDS.test(llmRole) || /^(?:online )?(?:assessment|interview|oa|coding (?:test|challenge))$/i.test(llmRole))) {
+  if (
+    llmRole &&
+    (ROLE_FRAGMENT_WORDS.test(llmRole) ||
+      /^(?:online )?(?:assessment|interview|oa|coding (?:test|challenge))$/i.test(llmRole) ||
+      // Schema echoes and category names are not titles.
+      /^(?:string|null|undefined|none|n\/?a|unknown|role|title|not specified|college admissions?|admissions?|scholarship)$/i.test(llmRole))
+  ) {
     llmRole = null;
   }
   const role = llm.role !== undefined ? llmRole : llmRole ?? rules.role;
@@ -1379,7 +1465,7 @@ export async function classifyEmails(
         { relevant: item.relevant, stage, company, role, req },
         ruleResults[i],
         emailText,
-        emails[i].fromEmail
+        emails[i]
       );
     }
     return out;
