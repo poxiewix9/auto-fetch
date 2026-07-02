@@ -9,6 +9,7 @@ import {
 } from "./gmail";
 import {
   classifyEmails,
+  companyKeySimilar,
   dedupKey,
   normCompany,
   normRole,
@@ -130,6 +131,10 @@ export async function syncUser(
     })
   ).filter((e): e is ParsedEmail => e !== null);
 
+  // Process oldest-first: confirmations carry the cleanest company/role/req,
+  // so they create the cards that later terse follow-ups then attach to.
+  emails.sort((a, b) => a.date.getTime() - b.date.getTime());
+
   // 5. Classify in batches: one Gemini call per batch, batches run in parallel.
   const BATCH = 10;
   const batches: ParsedEmail[][] = [];
@@ -146,6 +151,7 @@ export async function syncUser(
     id: string;
     role: string | null;
     role_key: string;
+    req: string | null;
     stage: Stage;
     first: number;
     last: number;
@@ -156,13 +162,16 @@ export async function syncUser(
   const byCompany = new Map<string, AppRec[]>();
   const { data: existingApps } = await supabase
     .from("applications")
-    .select("id, company, company_key, role, role_key, stage, locked, first_email_at, last_email_at")
+    .select("id, company, company_key, role, role_key, stage, locked, first_email_at, last_email_at, dedup_key")
     .eq("user_id", userId);
   for (const a of existingApps ?? []) {
+    // dedup_key carries the requisition id as a third segment (company::role::req).
+    const reqSeg = (a.dedup_key ?? "").split("::")[2] ?? "";
     const rec: AppRec = {
       id: a.id,
       role: a.role,
       role_key: a.role_key ?? "",
+      req: reqSeg || null,
       stage: a.stage as Stage,
       first: new Date(a.first_email_at).getTime(),
       last: new Date(a.last_email_at).getTime(),
@@ -183,19 +192,40 @@ export async function syncUser(
     // junk card, and (worse) they all share an empty key and merge into one.
     if (c.company === "Unknown Company") continue;
 
-    const companyKey = normCompany(c.company);
+    let companyKey = normCompany(c.company);
     const roleKey = normRole(c.role);
+    const req = c.req ?? null;
     const when = email.date.getTime();
+    // Name variants of one employer ("Impulse" vs "Impulse Space") must land
+    // in the same bucket or every variant spawns a duplicate card.
+    if (!byCompany.has(companyKey)) {
+      for (const k of byCompany.keys()) {
+        if (companyKeySimilar(k, companyKey)) {
+          companyKey = k;
+          break;
+        }
+      }
+    }
     const list = byCompany.get(companyKey) ?? [];
 
+    // Requisition ID is the strongest identity: same req = same application,
+    // two DIFFERENT known reqs are never the same application. Role text only
+    // groups applications when reqs don't contradict.
+    const compatible = (r: AppRec) => !req || !r.req || r.req === req;
+
     let rec: AppRec | undefined;
-    if (roleKey) {
+    if (req) rec = list.find((r) => r.req === req);
+    if (!rec && roleKey) {
       rec =
-        list.find((r) => r.role_key === roleKey) ?? // exact role
-        list.find((r) => r.role_key && roleSimilar(r.role_key, roleKey)) ?? // fuzzy role
-        list.find((r) => !r.role_key); // claim a roleless card
-    } else {
-      rec = list.find((r) => r.role_key) ?? list[0];
+        list.find((r) => compatible(r) && r.role_key === roleKey) ??
+        list.find((r) => compatible(r) && r.role_key && roleSimilar(r.role_key, roleKey)) ??
+        list.find((r) => compatible(r) && !r.role_key);
+    } else if (!rec && !roleKey) {
+      // Role-less follow-up: the most recently active compatible card, not an
+      // arbitrary one — status updates are usually about the latest activity.
+      rec = list
+        .filter(compatible)
+        .sort((a, b) => b.last - a.last)[0];
     }
 
     if (!rec) {
@@ -206,7 +236,7 @@ export async function syncUser(
           company: c.company,
           role: c.role,
           stage: c.stage,
-          dedup_key: dedupKey(c.company, c.role),
+          dedup_key: dedupKey(c.company, c.role, req),
           company_key: companyKey,
           role_key: roleKey,
           first_email_at: email.date.toISOString(),
@@ -219,6 +249,7 @@ export async function syncUser(
         id: created.id,
         role: c.role,
         role_key: roleKey,
+        req,
         stage: c.stage,
         first: when,
         last: when,
@@ -236,6 +267,7 @@ export async function syncUser(
         rec.role = c.role;
         rec.role_key = roleKey;
       }
+      if (!rec.req && req) rec.req = req;
       rec.touched = true;
     }
 
@@ -272,7 +304,7 @@ export async function syncUser(
         ...(r.locked ? {} : { stage: r.stage }),
         role: r.role,
         role_key: r.role_key,
-        dedup_key: `${r.company_key}::${r.role_key}`,
+        dedup_key: `${r.company_key}::${r.role_key}::${r.req ?? ""}`,
         first_email_at: new Date(r.first).toISOString(),
         last_email_at: new Date(r.last).toISOString(),
         updated_at: new Date().toISOString(),
