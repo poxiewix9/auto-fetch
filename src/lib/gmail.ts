@@ -267,12 +267,19 @@ export function buildQuery(afterEpochSeconds?: number): string {
     '"technical interview"',
     '"interview invitation"',
     '"invite you to interview"',
+    '"interview confirmation"',
+    '"video interview"',
     '"move forward with your application"',
     '"not to move forward"',
     '"we regret to inform"',
+    '"not been selected"',
+    '"other applicants"',
+    '"position has been filled"',
+    '"position has been closed"',
     '"pleased to offer"',
     '"offer of employment"',
   ];
+  // (rejection/interview phrasings above widen recall; the classifier filters)
   const senders = [
     "greenhouse.io",
     "lever.co",
