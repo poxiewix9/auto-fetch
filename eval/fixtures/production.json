@@ -23,7 +23,7 @@
       "subject": "Your Admission Decision",
       "fromName": "Kestwick University",
       "fromEmail": "admissions@kestwick.edu",
-      "body": "Vedanth, your admission decision will be available this Friday at 4:00 PM in your applicant portal. Log in to view your decision and next steps for enrollment.\n\nKestwick University Office of Admissions"
+      "body": "Alex, your admission decision will be available this Friday at 4:00 PM in your applicant portal. Log in to view your decision and next steps for enrollment.\n\nKestwick University Office of Admissions"
     },
     "expect": {
       "relevant": false

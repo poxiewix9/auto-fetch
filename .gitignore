@@ -41,12 +41,28 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# ---------------------------------------------------------------------------
+# REAL-INBOX ARTIFACTS — never commit. This repo is public; everything below
+# contains verbatim message bodies, recruiter names, or a personal application
+# history. Only sanitized, fully-synthetic fixtures belong in eval/fixtures/.
+# ---------------------------------------------------------------------------
 # eval fixtures derived from a real inbox stay local unless explicitly shared;
 # the harness auto-loads any eval/fixtures/*.json present.
 /eval/fixtures/real.json
+/eval/fixtures/real-gmail.json
+# quarantined records awaiting user adjudication (real-inbox content)
+/eval/pending-review.json
+# raw ground-truth dataset exported from a real Gmail account (verbatim bodies)
+/tally_fixtures.json
+# local handoff/session notes — reference real companies applied to
+/STATUS.md
+/eval/LOOP-PROMPT.md
 
 # local operator scripts (reset/reclassify/replay against prod creds)
 /scripts/
 
 # local board-diff report (contains application history)
 /BOARD-DIFF.txt
+
+# eval report / analysis references real-inbox companies + evidence quotes
+/eval/REPORT.md

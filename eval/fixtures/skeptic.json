@@ -279,10 +279,10 @@
     "note": "university student-job rejection (Research Assistant) survives the education gate",
     "email": {
       "subject": "Undergraduate Research Assistant - decision",
-      "fromName": "UT Austin Student Jobs",
-      "fromEmail": "studentjobs@austin.utexas.edu",
-      "body": "Dear Alex,\n\nThank you for your interest in the Undergraduate Research Assistant position in the Department of Computer Science. We regret to inform you that you have not been selected for this position.\n\nEnrollment-verified students are encouraged to apply to other openings each semester.\n\nUT Austin Student Employment"
+      "fromName": "Calderwood State Student Jobs",
+      "fromEmail": "studentjobs@westport.calderwood.edu",
+      "body": "Dear Alex,\n\nThank you for your interest in the Undergraduate Research Assistant position in the Department of Computer Science. We regret to inform you that you have not been selected for this position.\n\nEnrollment-verified students are encouraged to apply to other openings each semester.\n\nCalderwood State Student Employment"
     },
-    "expect": { "relevant": true, "stage": "rejected", "company": ["UT Austin Student", "Utexas", "UT Austin"], "role": ["Undergraduate Research Assistant", "Research Assistant"] }
+    "expect": { "relevant": true, "stage": "rejected", "company": ["Calderwood State Student", "Calderwood", "Calderwood State"], "role": ["Undergraduate Research Assistant", "Research Assistant"] }
   }
 ]
