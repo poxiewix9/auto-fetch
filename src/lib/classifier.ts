@@ -644,6 +644,11 @@ function roleCandidate(raw: string | null | undefined): string | null {
   // dotted abbreviations (Ph.D., U.S.) are not boundaries.
   if (/(?<!\b(?:Ph\.D|Dr|Mr|Ms|Mrs|Jr|Sr|St|Inc|Co|No|vs|U\.S|B\.S|M\.S|e\.g|i\.e))[.!?]\s+[A-Z(]/.test(r)) return null;
   if (!ROLE_TITLE_NOUN.test(r)) return null;
+  // A "title" that is nothing but a generic level names no discipline. It
+  // usually comes from an assessment's name rather than a posting ("Visa Intern
+  // Technical Skills Assessment" -> "Intern"), and as a card it swallows every
+  // unrelated internship at that employer. No role beats a bucket role.
+  if (/^(?:intern(?:ship)?s?|co[\s-]?ops?|trainees?|apprentices?)$/i.test(r)) return null;
   if (r.split(/\s+/).length > 9) return null;
   return titleCase(r);
 }
