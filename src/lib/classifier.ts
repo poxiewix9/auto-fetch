@@ -226,6 +226,9 @@ const COMPANY_NOISE_WORDS = new RegExp(
       "talent acquisition group",
       "talent acquisition team",
       "talent acquisition",
+      "university talent acquisition",
+      "university relations",
+      "university programs",
       "university recruiting",
       "early careers team",
       "early careers",
@@ -407,7 +410,7 @@ const NAME_END =
 const COMPANY_PATTERNS: RegExp[] = [
   // Employer named in vendor/recruiter mail. These run first so a
   // CodeSignal/Sova/recruiter email resolves to the real company.
-  new RegExp(`${NAME} (?:invited you|is waiting for)\\b`),
+  new RegExp(`${NAME} (?:invit(?:ed|es) you|is waiting for)\\b`),
   new RegExp(`\\bfrom ${NAME} to (?:take|complete|schedule)\\b`),
   new RegExp(`\\bon behalf of ${NAME}${NAME_END}`),
   new RegExp(`\\b(?:[Nn]ext [Ss]tep|[Uu]pdate|[Aa]pplication|[Aa]ssessment|[Ii]nterview|[Rr]ecruitment [Pp]rocess) (?:with|at) ${NAME}${NAME_END}`),
@@ -485,8 +488,21 @@ function extractCompany(email: ParsedEmail): string {
   //    On ATS domains display names are often the RECRUITER's name, so the
   //    body's weak patterns ("The Hypergrid Team") get priority there.
   const displayCompany = (): string | null => {
-    if (fromName && !looksLikePerson(fromName, fromEmail) && !isVendorName(fromName)) {
-      const c = companyCandidate(fromName);
+    let dn = fromName ?? "";
+    // Display names of the form "Channel (Client)": a vendor/ATS/board sender
+    // naming the employer in parens ("SHL (USAA)", "HackerRank (Snowflake)").
+    // When the OUTER token is a delivery channel, the parenthetical is the real
+    // employer; otherwise the parenthetical is junk (a person/office/code) and
+    // the outer part is the name ("Amazon (Jackie, AUTA)" -> "Amazon").
+    const paren = dn.match(/^\s*(.+?)\s*\(([^)]{2,40})\)\s*$/);
+    if (paren) {
+      const outer = paren[1].trim();
+      const outerIsChannel =
+        isVendorName(outer) || isVendorDomain(domain) || isJobBoard(domain) || isAts(domain);
+      dn = outerIsChannel ? paren[2].trim() : outer;
+    }
+    if (dn && !looksLikePerson(dn, fromEmail) && !isVendorName(dn)) {
+      const c = companyCandidate(dn);
       if (c && !looksLikePerson(c, fromEmail)) return c;
     }
     return null;
@@ -853,6 +869,10 @@ const OA_PATTERNS: RegExp[] = [
   /\bcomplet(?:e|ing|ed) (?:the |your |our |this )?(?:\w+[- ]){0,4}assessment\b/i,
   /\bskills? assessment\b/i,
   /\bassessment (?:invitation|link|process|experience|deadline)\b/i,
+  // Vendors phrase assessments as a "Hiring Test" or "invited to take this
+  // challenge/test" without the literal word "assessment".
+  /\bhiring (?:test|challenge|assessment)\b/i,
+  /\b(?:invited|invitation)\b[^.!?\n]{0,20}\bto (?:take|complete|start)\b[^.!?\n]{0,25}\b(?:challenge|test|assessment)\b/i,
   /\bpre[- ]?(?:hire|employment) (?:assessment|test)\b/i,
   /\b(?:aptitude|psychometric) test\b/i,
   /\bcandidate assessment\b/i,
@@ -989,7 +1009,7 @@ const SOCIAL_MARKERS =
 
 // Account plumbing (verify email, login details, password) is not a status.
 const ACCOUNT_MARKERS =
-  /\b(?:verify your email|confirm your email(?: address)?|email verification|account (?:setup|security|activation)|login details|username and password|reset your password|one[- ]time (?:passcode|password)|security code)\b/i;
+  /\b(?:verify your email|confirm your email(?: address)?|email verification|account (?:setup|security|activation)|account (?:has been|was) created|welcome to[^.!?\n]{0,40}\bcareers? site|candidate database|login details|username and password|reset your password|one[- ]time (?:passcode|password)|security code)\b/i;
 
 // Every genuine funnel email references the application relationship somehow.
 // ("offer" deliberately absent: "we want to offer you a voucher" is common in
@@ -1155,6 +1175,10 @@ export function classifyWithRules(email: ParsedEmail): Classification {
 
   const company = extractCompany(email);
   let role = roleCandidate(extractRole(email));
+  if (role) {
+    const stripped = stripLeadingCompany(role, company);
+    if (stripped !== role) role = roleCandidate(stripped) ?? role;
+  }
   if (role && roleIsJustCompany(role, company)) role = null;
   const req = extractReqId(decodeEntities(`${email.subject}\n${email.body.slice(0, 1200)}`));
 
@@ -1167,6 +1191,27 @@ export function classifyWithRules(email: ParsedEmail): Classification {
     confidence: detected?.confidence ?? (ats ? 0.4 : 0.2),
     source: "rules",
   };
+}
+
+/**
+ * ATS templates bleed the company into the title ("the Amazon Fall Software
+ * Engineer position", "2026 Charles Schwab Technology … Internship"). When the
+ * role's leading tokens are exactly the company name (any token count) and a
+ * real title remains after it, drop the prefix. Only strips a full company-name
+ * match at the very front, so titles that legitimately open with the company
+ * keep a title-noun remainder and multi-word names are handled too.
+ */
+function stripLeadingCompany(role: string, company: string): string {
+  const ck = normCompany(company).split(" ").filter(Boolean);
+  if (!ck.length) return role;
+  const words = role.trim().split(/\s+/);
+  if (words.length <= ck.length) return role;
+  const norm = (w: string) => w.toLowerCase().replace(/[^a-z0-9]/g, "");
+  for (let i = 0; i < ck.length; i++) {
+    if (norm(words[i]) !== ck[i]) return role;
+  }
+  const rest = sanitizeRole(words.slice(ck.length).join(" "));
+  return rest && ROLE_TITLE_NOUN.test(rest) ? rest : role;
 }
 
 /**
