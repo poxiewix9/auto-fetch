@@ -181,6 +181,7 @@ npm run eval -- --llm        # also score the Gemini path (needs a key)
 npm run eval -- --only=<id>  # single fixture
 npm run eval -- --verbose    # print passes too
 npm run eval -- --holdout    # FINAL CHECK ONLY — see below
+npm run eval:merge           # stage-merge rules (many emails -> one card stage)
 ```
 
 Fixtures live in `eval/fixtures/*.json` (the harness auto-loads every file it
@@ -198,6 +199,29 @@ Iterate against `dev` only. Running `--holdout` repeatedly and tuning until it
 passes destroys the only honest generalization estimate you have. The goal is a
 classifier that generalizes to *other people's* inboxes — a documented failure
 beats an inbox-specific hack.
+
+## Known limitations
+
+Documented on purpose. Each of these was reproduced against real mail and left
+unfixed because the available fix was worse than the bug.
+
+- **Emails that never name the job pool onto one card.** Some employers (Tesla
+  and RTX are the reliable offenders) send status mail with no job title and no
+  requisition number. Tally can only attach those to the company's most recently
+  active card, so a dozen unrelated rejections can stack on a single row. The
+  real fix is grouping by Gmail's conversation `threadId`, which needs a new
+  database column and a migration.
+- **Similar company names can merge.** The name-variant matcher exists so
+  "Impulse" and "Impulse Space" land on one card, but the same leniency can
+  merge genuinely different employers with similar names (e.g. a "Delta" and a
+  "Delta Dental").
+- **An employer that recruits only through an ATS may be unrepresentable.** If
+  every email comes from the ATS and never names the employer, there is nothing
+  to extract.
+- **One email announcing several roles becomes one card**, not one per role.
+- **Recall outside the Gmail query is unknowable.** `buildQuery()` in
+  [`src/lib/gmail.ts`](src/lib/gmail.ts) decides which mail is fetched at all;
+  anything it misses never reaches the classifier and cannot be measured.
 
 ## Scheduled (background) sync
 
