@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "eval": "tsx eval/run.ts"
+    "eval": "tsx eval/run.ts",
+    "eval:merge": "tsx eval/merge.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",

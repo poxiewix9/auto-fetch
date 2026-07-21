@@ -48,9 +48,26 @@ const PROGRESSION: Record<Stage, number> = {
   accepted: 7,
 };
 
-function mergeStage(current: Stage, incoming: Stage): Stage {
+/**
+ * Merge one email's stage into an application's current stage.
+ *
+ * Stages normally only ratchet forward, so a stray "we received your
+ * application" can't drag a card back from Interview. The exception is
+ * rejection: it is terminal only until something *newer* contradicts it.
+ * Re-applying to a job you were rejected from (or being re-engaged for it)
+ * must reopen the card, otherwise the board shows you rejected from a role
+ * you are actively in the running for.
+ *
+ * `incomingIsNewer` must be true only when this email is strictly newer than
+ * every other email already on the card — a late-arriving backfill of an old
+ * message must not reopen anything.
+ */
+function mergeStage(current: Stage, incoming: Stage, incomingIsNewer: boolean): Stage {
+  if (incomingIsNewer && current === "rejected" && incoming !== "rejected") return incoming;
   return PROGRESSION[incoming] > PROGRESSION[current] ? incoming : current;
 }
+
+export const __test = { mergeStage };
 
 export interface SyncResult {
   scanned: number;
@@ -260,7 +277,8 @@ export async function syncUser(
       list.push(rec);
       byCompany.set(companyKey, list);
     } else {
-      if (!rec.locked) rec.stage = mergeStage(rec.stage, c.stage);
+      // Compare against rec.last BEFORE it absorbs this email's timestamp.
+      if (!rec.locked) rec.stage = mergeStage(rec.stage, c.stage, when > rec.last);
       rec.first = Math.min(rec.first, when);
       rec.last = Math.max(rec.last, when);
       if (!rec.role_key && roleKey) {
