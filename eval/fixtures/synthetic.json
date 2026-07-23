@@ -1,0 +1,668 @@
+[
+  {
+    "id": "syn-conditional-interview-confirmation",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "conditional 'arrange an interview if…' inside a confirmation must stay applied",
+    "email": {
+      "subject": "Your application to Meridian Robotics",
+      "fromName": "Meridian Robotics Careers",
+      "fromEmail": "careers@meridianrobotics.com",
+      "body": "Hi Alex,\n\nThank you for applying to Meridian Robotics. We have received your application for the Embedded Software Intern position.\n\nOur team will review your materials, and we will contact you to arrange an interview if the role is a good match for your background. No action is needed from you right now.\n\nBest,\nMeridian Robotics Recruiting"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "applied",
+      "company": "Meridian Robotics",
+      "role": "Embedded Software Intern"
+    }
+  },
+  {
+    "id": "syn-conditional-oa-confirmation",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'some roles require an assessment' hypothetical must not become oa",
+    "email": {
+      "subject": "We received your application",
+      "fromName": "Harborline",
+      "fromEmail": "no-reply@harborline.com",
+      "body": "Dear Alex,\n\nYour application for the position of Data Platform Intern was successfully received and our review is underway.\n\nPlease note some of our jobs require you to complete an online assessment; if that applies to your requisition you will receive a separate invitation. If you are selected to complete a phone or onsite interview, a recruiter will reach out directly.\n\nThank you for your interest in Harborline."
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "applied",
+      "company": "Harborline",
+      "role": "Data Platform Intern"
+    }
+  },
+  {
+    "id": "syn-offer-fraud-newsletter",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'your job offer' inside scam-warning content is not an offer",
+    "email": {
+      "subject": "Protect yourself from recruiting scams",
+      "fromName": "CareerSafe Weekly",
+      "fromEmail": "newsletter@careersafeweekly.com",
+      "body": "This week: how to verify the authenticity of your job offer before accepting. Scammers send fake offer letters that look real. Always confirm your offer of employment through the company's official careers portal, and never pay fees. Plus: 10 companies hiring interns now — apply today!\n\nUnsubscribe | Update preferences"
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "syn-vendor-oa-real-employer",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "assessment vendor sends OA on behalf of employer named in body",
+    "email": {
+      "subject": "Northbrook Capital invited you to take an assessment",
+      "fromName": "CodeSignal",
+      "fromEmail": "no-reply@codesignal.com",
+      "body": "Hi Alex,\n\nYou've been invited by someone from Northbrook Capital to take the Northbrook Capital General Coding Assessment.\n\nDeadline: complete the assessment within 7 days. Use a quiet environment and a stable connection.\n\nGood luck!\nThe CodeSignal Team"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "oa",
+      "company": "Northbrook Capital"
+    }
+  },
+  {
+    "id": "syn-vendor-oa-application-at",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "vendor OA phrased 'for your application at X' — employer from body, not vendor domain",
+    "email": {
+      "subject": "Reminder: complete your online assessment",
+      "fromName": "",
+      "fromEmail": "donotreply@sovaassessment.com",
+      "body": "Hi Alex,\n\nJust a quick reminder that the deadline is approaching to complete the online assessment for your application at Kestrel Systems.\n\nDeadline: you have until 30 Jan to complete the assessment. Full instructions are provided when you log in.\n\nKind regards,\nKestrel Systems Early Careers Team"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "oa",
+      "company": "Kestrel Systems"
+    }
+  },
+  {
+    "id": "syn-recruiter-schedules-screen",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "human recruiter scheduling a phone screen; company from domain/signature, never the person",
+    "email": {
+      "subject": "Your application to Bluefjord",
+      "fromName": "Priya Raman",
+      "fromEmail": "priya.raman@bluefjord.io",
+      "body": "Hi Alex,\n\nThanks for applying to the Software Engineer Intern role at Bluefjord. I'd love to set up a 30-minute phone screen to talk through your background.\n\nCould you share your availability for this week or next? I'll send a calendar invite once we find a time.\n\nBest,\nPriya Raman\nUniversity Recruiting, Bluefjord"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "interview",
+      "company": "Bluefjord",
+      "role": "Software Engineer Intern"
+    }
+  },
+  {
+    "id": "syn-soft-rejection-other-applicants",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "soft rejection: 'move forward with other applicants' (not 'candidates')",
+    "email": {
+      "subject": "Application Update for Cloud Infrastructure Intern",
+      "fromName": "Talendra",
+      "fromEmail": "recruiting@talendra.com",
+      "body": "Hello Alex,\n\nWe appreciate the time you took to apply with us for the position of Cloud Infrastructure Intern.\n\nWe reviewed your information and decided to move forward with other applicants for this position. We encourage you to keep an eye on our careers page for future openings.\n\nKind regards,\nTalendra Recruiting"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "rejected",
+      "company": "Talendra",
+      "role": "Cloud Infrastructure Intern"
+    }
+  },
+  {
+    "id": "syn-soft-rejection-not-right-fit",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "soft rejection: 'this role wasn't the right fit at this time', thank-you opener",
+    "email": {
+      "subject": "An update on your application",
+      "fromName": "Nimbus Networks",
+      "fromEmail": "nimbusnetworks@myworkday.com",
+      "body": "Hi Alex,\n\nThanks so much for your interest in the Network Software Intern REQ88213 position! We loved learning about you.\n\nThis role wasn't the right fit for you at this time, but don't count yourself out — new opportunities open all the time, and we'd love to see you apply again.\n\nThe Nimbus Networks Talent Team"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "rejected",
+      "company": "Nimbus Networks",
+      "role": "Network Software Intern"
+    }
+  },
+  {
+    "id": "syn-soft-rejection-requisition-closed",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "rejection phrased as requisition closure after a 'received your application' opener; role may be nulled as a company-echo of 'Veldt Analytics' — both acceptable",
+    "email": {
+      "subject": "Update on your application",
+      "fromName": "Veldt Analytics",
+      "fromEmail": "careers@veldtanalytics.com",
+      "body": "Dear Alex,\n\nWe have received your application for the position of Analytics Intern, R44921. Due to business priorities, this requisition has been closed and we will not be filling the position. Your profile will remain in our system and you are welcome to apply to future openings.\n\nVeldt Analytics Talent Acquisition"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "rejected",
+      "company": "Veldt Analytics",
+      "role": [
+        "Analytics Intern",
+        null
+      ]
+    }
+  },
+  {
+    "id": "syn-soft-rejection-not-considering",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "rejection: 'we will not be considering you for this position'",
+    "email": {
+      "subject": "Thank you for your interest in Ostrander Group",
+      "fromName": "Ostrander Group",
+      "fromEmail": "hr@ostrandergroup.com",
+      "body": "Dear Alex,\n\nThank you for your application. After careful evaluation, we will not be considering you for this position of Firmware Intern. We received many strong applications and the decision was difficult.\n\nWe encourage you to apply for other positions that match your qualifications.\n\nOstrander Group Human Resources"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "rejected",
+      "company": "Ostrander Group",
+      "role": "Firmware Intern"
+    }
+  },
+  {
+    "id": "syn-unfortunately-volume-confirmation",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'Unfortunately, due to the volume of applications…' inside a confirmation is NOT a rejection",
+    "email": {
+      "subject": "Thanks for applying to Quillon Bio",
+      "fromName": "Quillon Bio",
+      "fromEmail": "quillonbio.hr@adp.com",
+      "body": "Hi Alex,\n\nThank you for your interest in a career at Quillon Bio. We are currently reviewing your application for the Bioinformatics Intern role, and if your profile is a good fit for this position, we will contact you about next steps.\n\nUnfortunately, because of the volume of applications we receive, we aren't always able to give individual status updates. We appreciate your patience.\n\nQuillon Bio Recruiting"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "applied",
+      "company": "Quillon Bio",
+      "role": "Bioinformatics Intern"
+    }
+  },
+  {
+    "id": "syn-jobboard-finish-application",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "job-board 'finish your application' nudge is not an application status",
+    "email": {
+      "subject": "IMPORTANT: Your application with Vertex Dynamics",
+      "fromName": "JobHive",
+      "fromEmail": "info@mail.jobhive.com",
+      "body": "Hey Alex,\n\nDid you have a chance to finish your application for the Software Intern position with Vertex Dynamics?\n\nIf No: based on the information you've submitted on JobHive, it's critical that you finish the application so you can increase your chances of getting hired. FINISH YOUR APPLICATION.\n\nIf Yes: you're all set! Check out our Interview Prep 101 guide and 7 First Round Interview tips in case you land an interview!\n\nGood luck,\nThe Team at JobHive\n\nDon't want these emails? Update your preferences."
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "syn-talent-community-blast",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "talent-community job blast: 'apply now' marketing, no application exists",
+    "email": {
+      "subject": "New opportunity for you at Crestwave - Apply Now!",
+      "fromName": "Crestwave Careers",
+      "fromEmail": "talent@crestwave.com",
+      "body": "Hello Alex,\n\nWe spotted a role that matches your profile: Platform Reliability Engineer. We hope to receive your application!\n\nPlease note you are not in consideration for the mentioned role until you submit your interest by applying directly on our Careers site.\n\nYou received this email because you joined our Talent Community.\nUnsubscribe"
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "syn-prep-platform-digest",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "coding-practice marketing with 'coding challenge'/'interview questions' keywords",
+    "email": {
+      "subject": "Your weekly coding digest",
+      "fromName": "AlgoArena",
+      "fromEmail": "no-reply@algoarena.com",
+      "body": "Hi AlgoArena member!\n\nDon't miss this week's Daily Coding Challenge — earn a badge and 200 ArenaCoins. Practice the latest interview questions asked at top companies, and join Weekly Contest 314 this Sunday.\n\nUpgrade to AlgoArena Premium for company-specific question banks.\n\nHappy coding!"
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "syn-greeting-not-company",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "greeting line 'Dear Alex' must never become the company; employer is in sender",
+    "email": {
+      "subject": "Thank you for Applying",
+      "fromName": "Pinewood Financial",
+      "fromEmail": "workday@pinewoodfinancial.com",
+      "body": "Dear Alex,\n\nWe've received your application for R0098821 Quantitative Research Intern and our recruiting team is reviewing it now. We appreciate your interest in joining the Pinewood Financial team!\n\nIf you are selected to complete an assessment, phone or onsite interview, we will contact you directly.\n\nPinewood Financial Talent Acquisition"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "applied",
+      "company": "Pinewood Financial",
+      "role": "Quantitative Research Intern"
+    }
+  },
+  {
+    "id": "syn-workday-tenant-sender",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "Workday tenant sender 'X@myworkday.com' with display 'MyWorkday X' — company is X, not MyWorkday",
+    "email": {
+      "subject": "Got it! Application received for: REQ55102 Summer 2026 Systems Engineering Internship",
+      "fromName": "MyWorkday Aurelia",
+      "fromEmail": "aurelia@myworkday.com",
+      "body": "You're on your way!\n\nAn exciting opportunity with Aurelia — thanks for applying to the REQ55102 Summer 2026 Systems Engineering Internship position. Our recruiting team is reviewing applications now.\n\nThe Aurelia Talent Team"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "applied",
+      "company": "Aurelia",
+      "role": [
+        "Systems Engineering Internship",
+        "Systems Engineering Intern"
+      ]
+    }
+  },
+  {
+    "id": "syn-talent-acquisition-name",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'X Talent Acquisition' sender display must resolve to X, never 'X Acquisition'",
+    "email": {
+      "subject": "We received your application",
+      "fromName": "Corvela Talent Acquisition",
+      "fromEmail": "noreply@corvela.com",
+      "body": "Hi Alex,\n\nThank you for submitting your application for the role of Machine Learning Intern - 51233. Our team will review it and reach out if there is a match.\n\nWarm regards,\nCorvela Talent Acquisition"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "applied",
+      "company": "Corvela",
+      "role": "Machine Learning Intern"
+    }
+  },
+  {
+    "id": "syn-reqid-adjacent-role",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "role stated with req-id prefix: 'the position of R-55821 Platform Engineer Intern'",
+    "email": {
+      "subject": "Application received",
+      "fromName": "Solvex",
+      "fromEmail": "recruiting@solvex.com",
+      "body": "Hello Alex,\n\nYour application for the position of R-55821 Platform Engineer Intern was successfully received and our review is underway. We will be in touch with any updates.\n\nSolvex Recruiting Team"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "applied",
+      "company": "Solvex",
+      "role": "Platform Engineer Intern"
+    }
+  },
+  {
+    "id": "syn-role-after-colon-list",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "role after 'for the following position(s):' — capture the title after the colon, not the sentence before",
+    "email": {
+      "subject": "Your submission to Delamar",
+      "fromName": "Delamar Careers",
+      "fromEmail": "donotreply@delamar.com",
+      "body": "Dear Alex,\n\nThis email is confirmation that your resume has been submitted for the following position(s):\n\nRobotics Software Intern 88210BR\n\nIf selected for an interview, you will be contacted by a member of our recruiting staff.\n\nThe Delamar Talent Team"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "applied",
+      "company": "Delamar",
+      "role": [
+        "Robotics Software Intern"
+      ]
+    }
+  },
+  {
+    "id": "syn-role-as-company-interest-in",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'Thank you for your interest in <ROLE TITLE>' — the role must not become the company",
+    "email": {
+      "subject": "Thank you for your interest in Software Engineering Intern - Summer 2026",
+      "fromName": "Kalorama - Workday",
+      "fromEmail": "kalorama@myworkday.com",
+      "body": "Hi Alex,\n\nThank you for your interest in Software Engineering Intern - Summer 2026. Your application has been received and is under review by the Kalorama recruiting team.\n\nWe will reach out with next steps as they become available.\n\nKalorama University Recruiting"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "applied",
+      "company": "Kalorama",
+      "role": [
+        "Software Engineering Intern"
+      ]
+    }
+  },
+  {
+    "id": "syn-oneway-video-interview",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "one-way recorded video interview invite via vendor — interview stage, employer from body",
+    "email": {
+      "subject": "Next Step with Tolvane – Your Video Interview Invitation",
+      "fromName": "",
+      "fromEmail": "donotreply@hirevue.com",
+      "body": "Hi Alex,\n\nThank you for completing the online assessment for your application at Tolvane. Great news — based on your results, we're excited to invite you to the next stage of our recruitment process: a one-way recorded video interview.\n\nYou'll answer 4 questions with 90 seconds to record each response. Please complete the video interview within 6 days.\n\nTolvane Early Careers Team"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "interview",
+      "company": "Tolvane"
+    }
+  },
+  {
+    "id": "syn-interview-confirmation-applied-opener",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "real interview scheduling buried under an application-style opener",
+    "email": {
+      "subject": "Interview Confirmation",
+      "fromName": "Halberd Aerospace",
+      "fromEmail": "recruiting@halberdaerospace.com",
+      "body": "Dear Alex,\n\nThank you for your interest in our open position and for the time you have invested in the process so far.\n\nThe hiring team has expressed an interest in learning more about your background. A member of our hiring team will be contacting you shortly to schedule time to speak with you about the Guidance Software Intern role.\n\nHalberd Aerospace Talent Acquisition"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "interview",
+      "company": "Halberd Aerospace",
+      "role": "Guidance Software Intern"
+    }
+  },
+  {
+    "id": "syn-real-offer",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "actual offer email",
+    "email": {
+      "subject": "Your offer from Windrose",
+      "fromName": "Windrose Recruiting",
+      "fromEmail": "recruiting@windrose.com",
+      "body": "Dear Alex,\n\nCongratulations! We are pleased to offer you the Software Engineer Intern position at Windrose for Summer 2026. Your offer letter and compensation details are attached; please review and sign by Friday.\n\nWe are excited to welcome you to the team!\n\nWindrose University Recruiting"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "offer",
+      "company": "Windrose",
+      "role": "Software Engineer Intern"
+    }
+  },
+  {
+    "id": "syn-benefits-we-offer-trap",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'the benefits we offer' in a confirmation is not an offer",
+    "email": {
+      "subject": "Application received - Corespring",
+      "fromName": "Corespring",
+      "fromEmail": "careers@corespring.com",
+      "body": "Hi Alex,\n\nThank you for applying to the Backend Intern role at Corespring. Your application has been received.\n\nWhile you wait, learn more about life at Corespring and the benefits we offer employees, from wellness stipends to mentorship programs.\n\nCorespring Recruiting"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "applied",
+      "company": "Corespring",
+      "role": "Backend Intern"
+    }
+  },
+  {
+    "id": "syn-rejection-other-opportunities-role-trap",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'apply for other opportunities' must not become the role",
+    "email": {
+      "subject": "Your application status",
+      "fromName": "Bramblewood",
+      "fromEmail": "recruiting@bramblewood.com",
+      "body": "Dear Alex,\n\nThank you for your interest in the 84120 Simulation Engineer Intern position at Bramblewood. After review, you have not been selected for this position.\n\nWe invite you to apply for other opportunities at Bramblewood that match your skills.\n\nBramblewood Talent Acquisition"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "rejected",
+      "company": "Bramblewood",
+      "role": "Simulation Engineer Intern"
+    }
+  },
+  {
+    "id": "syn-nonjob-program-application",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "non-job 'application accepted' (event/program) is out of scope",
+    "email": {
+      "subject": "Your application to Founder Camp 2026 was received",
+      "fromName": "Founder Camp",
+      "fromEmail": "hello@foundercamp.org",
+      "body": "Congratulations! Your application to Founder Camp 2026 (July 25-26) has been accepted. We are hand-selecting attendees and you made the cut.\n\nAdd the dates to your calendar and get ready for two days of talks and networking with founders.\n\nThe Founder Camp Team"
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "syn-nonjob-housing-application",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "housing/apartment 'application received' is out of scope",
+    "email": {
+      "subject": "Guest Card Received - Lead ID: 5512204",
+      "fromName": "The Meridian Apartments",
+      "fromEmail": "leasing@meridianliving.com",
+      "body": "Thank you for your interest in The Meridian!\n\nProperty: The Meridian at Fifth\nDesired Move-in Date: 08/01/2026\nDesired Monthly Rent: $1,400\nTour Taken: No\n\nDate Submitted: 06/12/2026\nA leasing agent will contact you shortly."
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "syn-jobboard-delivered-update",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "job-board-delivered employer update: employer from subject/body, not the board",
+    "email": {
+      "subject": "Your application to Machine Learning Engineer Intern at Foxglove Data",
+      "fromName": "CareerLink",
+      "fromEmail": "jobs-noreply@careerlink.com",
+      "body": "Hi Alex,\n\nYour update from Foxglove Data\n\nThank you for your interest in the Machine Learning Engineer Intern position. The team at Foxglove Data has reviewed your application and will reach out if your background is a match.\n\nYou applied via CareerLink on June 2."
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "applied",
+      "company": "Foxglove Data",
+      "role": "Machine Learning Engineer Intern"
+    }
+  },
+  {
+    "id": "syn-incomplete-application-nudge",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "employer 'finish your incomplete application' nudge — no submission happened; must not create an applied card",
+    "email": {
+      "subject": "Complete your application with Straton",
+      "fromName": "Straton Careers",
+      "fromEmail": "careers@straton.com",
+      "body": "Hi Alex,\n\nWe noticed you recently started an application for the Software Engineer II (Intern) - United States job and were not able to fully complete it.\n\nTo finish your application, please click CONTINUE APPLYING below. Incomplete applications cannot be considered.\n\nStraton Recruiting"
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "syn-person-sender-not-company",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "'Last, First' recruiter display name must never be the company",
+    "email": {
+      "subject": "Following up on your Riverbank application",
+      "fromName": "Okafor, Chidi",
+      "fromEmail": "chidi.okafor@riverbank.com",
+      "body": "Hi Alex,\n\nThank you for applying to Riverbank. I wanted to let you know your application for the Payments Intern role is still under review with the hiring team. I'll reach out as soon as I have an update.\n\nBest,\nChidi Okafor\nEarly Careers Recruiter, Riverbank"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "applied",
+      "company": "Riverbank",
+      "role": "Payments Intern"
+    }
+  },
+  {
+    "id": "syn-next-step-process-not-interview",
+    "source": "synthetic",
+    "split": "dev",
+    "note": "generic 'next step in the process' phrasing on an OA invite stays oa",
+    "email": {
+      "subject": "Next step in your Lanternfish application",
+      "fromName": "Lanternfish Recruiting",
+      "fromEmail": "noreply@lanternfish.com",
+      "body": "Hi Alex,\n\nThank you for applying to the Software Development Intern role. As the next step in the process, we invite you to complete a HackerRank coding assessment. You will have 90 minutes once you begin, and the link below is valid for 7 days.\n\nSTART ASSESSMENT\n\nLanternfish University Recruiting"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "oa",
+      "company": "Lanternfish",
+      "role": "Software Development Intern"
+    }
+  },
+  {
+    "id": "syn-referral-thanks-not-application",
+    "source": "synthetic",
+    "split": "holdout",
+    "note": "'thanks for your interest' newsletter-ish careers-brand mail with no application",
+    "email": {
+      "subject": "Explore engineering careers at Saxonvale",
+      "fromName": "Saxonvale Careers",
+      "fromEmail": "careers-news@saxonvale.com",
+      "body": "Hi Alex,\n\nThanks for your interest in Saxonvale! Here's a look at what our engineering teams are building this quarter, plus open internships you might like: Software Intern, Data Intern, and more.\n\nBrowse open roles and apply on our careers site.\n\nYou're receiving this because you signed up for careers updates. Unsubscribe."
+    },
+    "expect": {
+      "relevant": false
+    }
+  },
+  {
+    "id": "syn-oa-completion-confirmation",
+    "source": "synthetic",
+    "split": "holdout",
+    "note": "OA completion receipt stays oa (progress within assessment stage), role absent",
+    "email": {
+      "subject": "Thanks for completing the Delargo Technical Skills Assessment",
+      "fromName": "HackerRank for Work",
+      "fromEmail": "support@hackerrankforwork.com",
+      "body": "Hi Alex,\n\nThanks for completing the Delargo Intern Technical Skills Assessment (Coding - Intermediate). We've sent your submission to Delargo and your recruiter will be in touch with results and next steps.\n\nThe HackerRank Team"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "oa",
+      "company": "Delargo"
+    }
+  },
+  {
+    "id": "syn-rejection-after-assessment",
+    "source": "synthetic",
+    "split": "holdout",
+    "note": "post-assessment rejection with greeting-fragment and role traps",
+    "email": {
+      "subject": "Your application status",
+      "fromName": "Fernhollow",
+      "fromEmail": "workday@fernhollow.com",
+      "body": "Dear Alex,\n\nThank you for taking the assessment for the Technology Intern position. We have carefully reviewed your results, and based on the results, your application will not be moving forward at this time.\n\nWe appreciate your interest in Fernhollow and wish you all the best in your job search.\n\nFernhollow Talent Acquisition"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "rejected",
+      "company": "Fernhollow",
+      "role": "Technology Intern"
+    }
+  },
+  {
+    "id": "syn-hiring-manager-another-candidate",
+    "source": "synthetic",
+    "split": "holdout",
+    "note": "rejection: 'hiring manager has chosen to move forward with another candidate'",
+    "email": {
+      "subject": "Thank you for your application to Gilmore Systems",
+      "fromName": "Gilmore Systems",
+      "fromEmail": "noreply@gilmoresystems.com",
+      "body": "Hi Alex,\n\nThank you for your interest in the position of Software Engineer Intern - Platform - 44120. The hiring manager has chosen to move forward with another candidate, so we will not be able to explore this particular role further with you at this time.\n\nWe hope you'll apply to future openings that match your skills.\n\nGilmore Systems Recruiting"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "rejected",
+      "company": "Gilmore Systems",
+      "role": "Software Engineer Intern - Platform"
+    }
+  },
+  {
+    "id": "syn-more-competitive-applications",
+    "source": "synthetic",
+    "split": "holdout",
+    "note": "rejection: 'more competitive applications were submitted'",
+    "email": {
+      "subject": "An update on your Ridgeline job application",
+      "fromName": "Ridgeline Careers",
+      "fromEmail": "careers@ridgeline.com",
+      "body": "Dear Alex,\n\nThank you for giving us the opportunity to consider you for the R-2026-1188 Software Engineer Summer 2026 Internship.\n\nOur recruiters determined there were more competitive applications submitted for this position; therefore, we're not moving forward with your application. We encourage you to keep applying.\n\nRidgeline Talent"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "rejected",
+      "company": "Ridgeline",
+      "role": [
+        "Software Engineer Intern",
+        "Software Engineer Internship"
+      ]
+    }
+  },
+  {
+    "id": "syn-greenhouse-good-fit-template",
+    "source": "synthetic",
+    "split": "holdout",
+    "note": "Greenhouse-style confirmation with 'if your application seems like a good fit' — role must be null, stage applied",
+    "email": {
+      "subject": "Thank you for applying to Copperfield",
+      "fromName": "Copperfield",
+      "fromEmail": "no-reply@us.greenhouse-mail.io",
+      "body": "Hi Alex,\n\nThank you for your interest in Copperfield! We have received your application and will be reviewing it shortly. If your application seems like a good fit for the position, we will contact you soon.\n\nBest,\nThe Copperfield Team"
+    },
+    "expect": {
+      "relevant": true,
+      "stage": "applied",
+      "company": "Copperfield",
+      "role": null
+    }
+  },
+  {
+    "id": "syn-agency-outreach-unsolicited",
+    "source": "synthetic",
+    "split": "holdout",
+    "note": "staffing-agency cold outreach about a role the user never applied to",
+    "email": {
+      "subject": "Exciting SDE Intern opportunity — are you available?",
+      "fromName": "Marcus Bell",
+      "fromEmail": "marcus.bell@apexstaffinggroup.com",
+      "body": "Hi Alex,\n\nI came across your profile and think you'd be a great fit for a Software Development Intern opening with one of our Fortune 500 clients. The role is remote, pays $45/hr, and starts in June.\n\nIf you're interested, reply with your resume and the best time for a quick call to discuss.\n\nMarcus Bell\nSenior Technical Recruiter, Apex Staffing Group"
+    },
+    "expect": {
+      "relevant": false
+    }
+  }
+]

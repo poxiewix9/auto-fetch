@@ -73,9 +73,12 @@ GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 LLM_PROVIDER=gemini                    # optional; blank = rules-only
 GEMINI_API_KEY=                        # https://aistudio.google.com/apikey
-GEMINI_MODEL=gemini-2.5-flash-lite
+GEMINI_MODEL=gemini-2.5-flash
 CRON_SECRET=                           # optional; protects /api/sync/cron
 ```
+
+See [LLM classification](#llm-classification-gemini) for how to get a Gemini key
+and which model to use.
 
 ### 6. Run
 
@@ -117,6 +120,108 @@ gmail_tokens (Supabase, RLS)
 - **Classification:** [`src/lib/classifier.ts`](src/lib/classifier.ts) runs regex
   rules first; if `GEMINI_API_KEY` is set, a batched LLM pass refines company/role/stage
   and falls back to rules on any failure.
+
+## LLM classification (Gemini)
+
+Rules run first and always. If `LLM_PROVIDER=gemini` and `GEMINI_API_KEY` are
+set, a batched LLM pass then refines company / role / stage and filters noise.
+**Everyone runs their own key** — it is per-person, never shared or committed.
+
+### Getting a key
+
+1. Sign in at <https://aistudio.google.com/apikey>.
+2. **Create API key** → pick (or create) a Google Cloud project.
+3. Copy the `AIza...` value into `GEMINI_API_KEY` in **your own** `.env.local`.
+   That file is gitignored; keep it that way.
+
+### Deploying to Vercel
+
+`.env.local` is local-only — Vercel never reads it. Set the variables in
+**Project → Settings → Environment Variables** (Production *and* Preview), then
+redeploy:
+
+| Variable | Value |
+| --- | --- |
+| `LLM_PROVIDER` | `gemini` (blank/omit = rules-only) |
+| `GEMINI_API_KEY` | your own key |
+| `GEMINI_MODEL` | `gemini-2.5-flash` |
+
+### Swapping or rotating a key
+
+Delete the old key in AI Studio **first**, then paste the new one into
+`.env.local` and into Vercel, and redeploy. A leaked key is billable by whoever
+finds it, so rotate immediately if one is ever pasted into a chat, screenshot,
+or commit.
+
+### Which model
+
+Use **`gemini-2.5-flash`**. `gemini-2.5-flash-lite` is cheaper but has been
+observed in multi-hour brownouts where every real (multi-email) batch returns
+`503` while a trivial one-token call still succeeds — not a key or quota
+problem, and swapping keys does not help. The free tier also returns `429` on
+large syncs on any model.
+
+**Either way the app degrades to rules-only, quietly to the user.** The
+classifier retries with backoff, logs a `console.warn` on every failure, and
+opens a 60-second cooldown breaker after a fully-failed call. To see how often
+the LLM is actually running, check your server / Vercel logs for:
+
+```
+[classifier] gemini
+```
+
+This is why the rule engine is held to the same eval bar as the LLM path — under
+a brownout, the rules *are* the classifier.
+
+## Evaluating the classifier
+
+```bash
+npm run eval                 # rules path, dev fixtures
+npm run eval -- --llm        # also score the Gemini path (needs a key)
+npm run eval -- --only=<id>  # single fixture
+npm run eval -- --verbose    # print passes too
+npm run eval -- --holdout    # FINAL CHECK ONLY — see below
+npm run eval:merge           # stage-merge rules (many emails -> one card stage)
+```
+
+Fixtures live in `eval/fixtures/*.json` (the harness auto-loads every file it
+finds there) and are scored on relevance / stage / company / role.
+
+**Committed fixtures are 100% synthetic** — fabricated companies, senders, and
+bodies. Fixtures generated from a real inbox are gitignored on purpose
+(`real*.json`); they contain verbatim message bodies. If you build your own from
+your mail, keep them local. Because of this, your local pass/fail total will
+differ from a collaborator's — compare rates on the shared synthetic set, not
+raw counts.
+
+**Holdout discipline:** each fixture carries a `split` of `dev` or `holdout`.
+Iterate against `dev` only. Running `--holdout` repeatedly and tuning until it
+passes destroys the only honest generalization estimate you have. The goal is a
+classifier that generalizes to *other people's* inboxes — a documented failure
+beats an inbox-specific hack.
+
+## Known limitations
+
+Documented on purpose. Each of these was reproduced against real mail and left
+unfixed because the available fix was worse than the bug.
+
+- **Emails that never name the job pool onto one card.** Some employers (Tesla
+  and RTX are the reliable offenders) send status mail with no job title and no
+  requisition number. Tally can only attach those to the company's most recently
+  active card, so a dozen unrelated rejections can stack on a single row. The
+  real fix is grouping by Gmail's conversation `threadId`, which needs a new
+  database column and a migration.
+- **Similar company names can merge.** The name-variant matcher exists so
+  "Impulse" and "Impulse Space" land on one card, but the same leniency can
+  merge genuinely different employers with similar names (e.g. a "Delta" and a
+  "Delta Dental").
+- **An employer that recruits only through an ATS may be unrepresentable.** If
+  every email comes from the ATS and never names the employer, there is nothing
+  to extract.
+- **One email announcing several roles becomes one card**, not one per role.
+- **Recall outside the Gmail query is unknowable.** `buildQuery()` in
+  [`src/lib/gmail.ts`](src/lib/gmail.ts) decides which mail is fetched at all;
+  anything it misses never reaches the classifier and cannot be measured.
 
 ## Scheduled (background) sync
 

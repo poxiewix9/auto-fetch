@@ -81,10 +81,23 @@ export function Dashboard({
   const [view, setView] = useState<"board" | "funnel">("board");
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
 
-  useEffect(() => setApps(applications), [applications]);
+  // Re-sync the local copy when the server sends fresh applications. Adjusting
+  // state during render (rather than in an effect) lets React discard the
+  // in-progress render immediately instead of painting stale rows first.
+  const [lastServerApps, setLastServerApps] = useState(applications);
+  if (applications !== lastServerApps) {
+    setLastServerApps(applications);
+    setApps(applications);
+  }
 
+  // Deliberately an effect: `scanLimit` is rendered into an input on a
+  // statically prerendered page, so it must start at the server value (300) and
+  // only pick up localStorage after hydration. Reading storage in a useState
+  // initializer would render a different value on the client and break
+  // hydration.
   useEffect(() => {
     const saved = Number(localStorage.getItem("tally:scanLimit"));
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- see above
     if (Number.isFinite(saved) && saved >= 10) setScanLimit(saved);
   }, []);
 

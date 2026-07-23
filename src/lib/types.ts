@@ -135,6 +135,8 @@ export interface Classification {
   stage: Stage;
   company: string;
   role: string | null;
+  /** Requisition/job ID when stated — distinguishes same-title applications. */
+  req?: string | null;
   confidence: number;
   source: "rules" | "llm";
 }
